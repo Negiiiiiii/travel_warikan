@@ -341,12 +341,18 @@
             
             groupRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data && data.lastUpdateBy !== getUserId()) {
-                    // 他のユーザーからの更新の場合のみUIを更新
-                    console.log('他のデバイスからデータ更新を受信:', data);
-                    
-                    // データを更新（競合処理付き）
-                    updateDataFromFirebase(data);
+                if (data) {
+                    if (data.lastUpdateBy !== getUserId()) {
+                        // 他のユーザーからの更新の場合のみUIを更新
+                        console.log('他のデバイスからデータ更新を受信:', data);
+                        updateDataFromFirebase(data);
+                    } else {
+                        // 自分の更新の場合はデータのみ同期（UI更新なし）
+                        console.log('自分のデータ更新を確認:', data);
+                        groupName = data.groupName || '';
+                        members = data.members || [];
+                        expenses = data.expenses || [];
+                    }
                 }
             });
         }
@@ -354,6 +360,7 @@
         // Firebaseからのデータでローカル状態を更新
         function updateDataFromFirebase(data) {
             const oldExpensesCount = expenses.length;
+            const oldMembersCount = members.length;
             
             groupName = data.groupName || '';
             members = data.members || [];
@@ -368,8 +375,13 @@
             } else {
                 // 計算画面の場合
                 document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
-                updatePayerOptions();
-                updateParticipantOptions();
+                
+                // メンバー数が変更された場合のみ選択肢を更新
+                if (members.length !== oldMembersCount) {
+                    updatePayerOptionsPreservingSelection();
+                    updateParticipantOptionsPreservingSelection();
+                }
+                
                 updateExpenseList();
                 calculateSettlement();
             }
@@ -381,6 +393,52 @@
             if (expenses.length > oldExpensesCount) {
                 showNotification('💰 新しい支出が追加されました');
             }
+        }
+
+        // 選択状態を保持しながら支払者選択肢を更新
+        function updatePayerOptionsPreservingSelection() {
+            const payerSelect = document.getElementById('payer');
+            const currentSelection = payerSelect.value;
+            
+            // 選択肢を更新
+            payerSelect.innerHTML = '<option value="">選択してください</option>';
+            members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member;
+                option.textContent = member;
+                payerSelect.appendChild(option);
+            });
+            
+            // 前の選択を復元（そのメンバーがまだ存在する場合）
+            if (currentSelection && members.includes(currentSelection)) {
+                payerSelect.value = currentSelection;
+            }
+        }
+
+        // 選択状態を保持しながら参加者選択肢を更新
+        function updateParticipantOptionsPreservingSelection() {
+            const participantsDiv = document.getElementById('participants');
+            const currentSelections = [];
+            
+            // 現在の選択状態を記録
+            participantsDiv.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                currentSelections.push(checkbox.value);
+            });
+            
+            // 選択肢を更新
+            participantsDiv.innerHTML = '';
+            members.forEach(member => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                
+                const isChecked = currentSelections.includes(member) || currentSelections.length === 0;
+                
+                div.innerHTML = `
+                    <input type="checkbox" id="participant-${member}" value="${member}" ${isChecked ? 'checked' : ''}>
+                    <label for="participant-${member}">${member}</label>
+                `;
+                participantsDiv.appendChild(div);
+            });
         }
 
         // 簡単なユーザーID生成（デバイス識別用）
