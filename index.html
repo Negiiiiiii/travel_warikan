@@ -184,6 +184,9 @@
             <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
                 💡 グループを作成後、QRコードやリンクで簡単に共有できます
             </p>
+            <div id="connection-status" style="font-size: 12px; margin-top: 5px; font-weight: 500;">
+                🔄 接続中...
+            </div>
         </div>
 
         <!-- グループ作成セクション -->
@@ -273,21 +276,175 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <script>
+        // Firebase設定情報（あなたの設定に置き換えてください）
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCV_AtY7Usez8lxJdQMENmQWBz0PNua1w",
+            authDomain: "travel-warikan-f0d2f.firebaseapp.com",
+            databaseURL: "https://travel-warikan-f0d2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "travel-warikan-f0d2f",
+            storageBucket: "travel-warikan-f0d2f.firebasestorage.app",
+            messagingSenderId: "87800680503",
+            appId: "1:87800680503:web:9d32623aec2ed132d8efb2",
+        };
+
+        // Firebase初期化
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Firebase接続状態の管理
+        let isFirebaseConnected = false;
+        let currentGroupId = null;
+        
+        // 接続状態監視
+        const connectedRef = database.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            isFirebaseConnected = snap.val() === true;
+            updateConnectionStatus();
+            console.log('Firebase接続状態:', isFirebaseConnected ? '接続' : '切断');
+        });
+
+        // グループIDを生成
+        function generateGroupId() {
+            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        }
+
+        // Firebaseにデータを保存
+        function saveToFirebase() {
+            if (!currentGroupId || !isFirebaseConnected) return;
+            
+            const groupData = {
+                groupName: groupName,
+                members: members,
+                expenses: expenses,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP,
+                lastUpdateBy: getUserId()
+            };
+            
+            database.ref('groups/' + currentGroupId).set(groupData)
+                .then(() => {
+                    console.log('Firebase同期完了');
+                })
+                .catch((error) => {
+                    console.error('Firebase同期エラー:', error);
+                });
+        }
+
+        // Firebaseからデータを監視
+        function watchFirebaseData(groupId) {
+            currentGroupId = groupId;
+            const groupRef = database.ref('groups/' + groupId);
+            
+            groupRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.lastUpdateBy !== getUserId()) {
+                    // 他のユーザーからの更新の場合のみUIを更新
+                    console.log('他のデバイスからデータ更新を受信:', data);
+                    
+                    // データを更新（競合処理付き）
+                    updateDataFromFirebase(data);
+                }
+            });
+        }
+
+        // Firebaseからのデータでローカル状態を更新
+        function updateDataFromFirebase(data) {
+            const oldExpensesCount = expenses.length;
+            
+            groupName = data.groupName || '';
+            members = data.members || [];
+            expenses = data.expenses || [];
+            
+            // UIを更新
+            if (document.getElementById('main-section').classList.contains('hidden')) {
+                // グループ設定画面の場合
+                document.getElementById('group-name').value = groupName;
+                updateMemberList();
+                updateStartButton();
+            } else {
+                // 計算画面の場合
+                document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+                updatePayerOptions();
+                updateParticipantOptions();
+                updateExpenseList();
+                calculateSettlement();
+            }
+            
+            // LocalStorageも更新
+            saveData();
+            
+            // 新しい支出が追加された場合は通知
+            if (expenses.length > oldExpensesCount) {
+                showNotification('💰 新しい支出が追加されました');
+            }
+        }
+
+        // 簡単なユーザーID生成（デバイス識別用）
+        function getUserId() {
+            let userId = localStorage.getItem('travelSplitUserId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substring(2, 15);
+                localStorage.setItem('travelSplitUserId', userId);
+            }
+            return userId;
+        }
+
+        // 接続状態表示の更新
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connection-status');
+            if (statusElement) {
+                statusElement.style.color = isFirebaseConnected ? '#27ae60' : '#e74c3c';
+                statusElement.textContent = isFirebaseConnected ? '🟢 オンライン同期中' : '🔴 オフライン';
+            }
+        }
+
+        // 通知表示
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #3498db;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
         // グローバル変数
         let members = [];
         let expenses = [];
         let groupName = '';
 
-        // データ保存機能
+        // データ保存機能（Firebase + LocalStorage）
         function saveData() {
+            // LocalStorageに保存（オフライン用）
             const data = {
                 groupName: groupName,
                 members: members,
                 expenses: expenses,
+                groupId: currentGroupId,
                 timestamp: new Date().toISOString()
             };
             localStorage.setItem('travelSplitData', JSON.stringify(data));
+            
+            // Firebaseに保存（リアルタイム同期）
+            saveToFirebase();
         }
 
         // データ読み込み機能
@@ -299,6 +456,7 @@
                     groupName = data.groupName || '';
                     members = data.members || [];
                     expenses = data.expenses || [];
+                    currentGroupId = data.groupId || null;
                     return true;
                 } catch (e) {
                     console.error('データの読み込みに失敗しました:', e);
@@ -333,8 +491,14 @@
             }
         }
 
-        // データ圧縮・エンコード機能
+        // データ圧縮・エンコード機能（Firebase用に簡略化）
         function encodeShareData() {
+            // Firebase使用時はグループIDのみをエンコード
+            if (currentGroupId) {
+                return currentGroupId;
+            }
+            
+            // フォールバック：従来の方式
             const shareData = {
                 groupName: groupName,
                 members: members,
@@ -343,7 +507,6 @@
                 version: '1.0'
             };
             
-            // JSON文字列化 → Base64エンコード → URLセーフに変換
             const jsonString = JSON.stringify(shareData);
             const base64String = btoa(unescape(encodeURIComponent(jsonString)));
             return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
@@ -525,6 +688,11 @@
                 return;
             }
             
+            // 新しいグループの場合、IDを生成
+            if (!currentGroupId) {
+                currentGroupId = generateGroupId();
+            }
+            
             // UIを更新
             document.getElementById('group-setup').classList.add('hidden');
             document.getElementById('main-section').classList.remove('hidden');
@@ -535,6 +703,10 @@
             // 支払者選択肢を更新
             updatePayerOptions();
             updateParticipantOptions();
+            
+            // Firebase監視を開始
+            watchFirebaseData(currentGroupId);
+            
             saveData();
         }
 
@@ -779,23 +951,39 @@
             const shareData = urlParams.get('share');
             
             if (shareData) {
-                const decodedData = decodeShareData(shareData);
-                if (decodedData) {
-                    // 共有データを適用
-                    groupName = decodedData.groupName || '';
-                    members = decodedData.members || [];
-                    expenses = decodedData.expenses || [];
+                // Firebase GroupIDかどうかをチェック（短い場合はGroupID）
+                if (shareData.length <= 30 && !shareData.includes('=')) {
+                    // Firebase GroupIDとして処理
+                    currentGroupId = shareData;
+                    watchFirebaseData(currentGroupId);
                     
-                    // LocalStorageにも保存
-                    saveData();
-                    
-                    console.log('共有データを読み込みました:', decodedData);
-                    
-                    // URLから共有パラメータを削除（履歴を残さない）
+                    // URLから共有パラメータを削除
                     const newUrl = window.location.href.split('?')[0];
                     window.history.replaceState({}, document.title, newUrl);
                     
+                    console.log('Firebase GroupIDから読み込み開始:', currentGroupId);
                     return true;
+                } else {
+                    // 従来のBase64形式として処理
+                    const decodedData = decodeShareData(shareData);
+                    if (decodedData) {
+                        groupName = decodedData.groupName || '';
+                        members = decodedData.members || [];
+                        expenses = decodedData.expenses || [];
+                        
+                        // 新しいGroupIDを生成してFirebaseに保存
+                        currentGroupId = generateGroupId();
+                        watchFirebaseData(currentGroupId);
+                        saveData();
+                        
+                        console.log('従来の共有データを読み込みました:', decodedData);
+                        
+                        // URLから共有パラメータを削除
+                        const newUrl = window.location.href.split('?')[0];
+                        window.history.replaceState({}, document.title, newUrl);
+                        
+                        return true;
+                    }
                 }
             }
             return false;
@@ -833,14 +1021,26 @@
                 // 清算結果を計算・表示
                 calculateSettlement();
                 
+                // Firebase監視を開始（まだ開始されていない場合）
+                if (currentGroupId && !loadedFromShare) {
+                    watchFirebaseData(currentGroupId);
+                }
+                
                 if (loadedFromShare) {
                     // 共有リンクから読み込んだ場合は通知
                     setTimeout(() => {
-                        alert(`📤 共有されたグループ「${groupName}」を読み込みました！\n\n支出を追加して割り勘計算を続けてください。`);
-                    }, 500);
+                        showNotification(`📤 共有されたグループに参加しました！\nリアルタイム同期が有効です。`);
+                    }, 1000);
                 }
                 
                 console.log(loadedFromShare ? '共有データを復元しました' : '保存されたデータを復元しました');
+            } else if (currentGroupId) {
+                // GroupIDがあるがデータがまだ来ていない場合（Firebase待ち）
+                setTimeout(() => {
+                    if (!groupName && currentGroupId) {
+                        showNotification('🔄 グループデータを読み込み中...');
+                    }
+                }, 2000);
             } else {
                 // 部分的なデータがある場合はグループ設定画面で表示
                 if (groupName) {
