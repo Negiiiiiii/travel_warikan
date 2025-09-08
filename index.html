@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelSplit - 旅行費用計算アプリ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button.danger {
+            background-color: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .member-list {
+            list-style: none;
+        }
+        
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        
+        .expense-list {
+            list-style: none;
+        }
+        
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .expense-details {
+            flex-grow: 1;
+        }
+        
+        .settlement-list {
+            list-style: none;
+        }
+        
+        .settlement-item {
+            padding: 12px;
+            background: #e8f5e8;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 4px solid #27ae60;
+            font-weight: 500;
+        }
+        
+        .summary {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .checkbox-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧳 TravelSplit</h1>
+            <p>旅行費用の割り勘計算を簡単に</p>
+            <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
+                💡 グループを作成後、QRコードやリンクで簡単に共有できます
+            </p>
+        </div>
+
+        <!-- グループ作成セクション -->
+        <div id="group-setup" class="section">
+            <h2>📝 グループ設定</h2>
+            <div class="form-group">
+                <label for="group-name">グループ名</label>
+                <input type="text" id="group-name" placeholder="例: 沖縄旅行2025" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="member-name">メンバー名</label>
+                <input type="text" id="member-name" placeholder="名前を入力してください">
+                <button type="button" onclick="addMember()">メンバー追加</button>
+            </div>
+            
+            <div class="form-group">
+                <label>現在のメンバー</label>
+                <ul id="member-list" class="member-list"></ul>
+            </div>
+            
+            <button type="button" onclick="startCalculation()" id="start-btn" disabled>計算開始</button>
+        </div>
+
+        <!-- メイン計算セクション -->
+        <div id="main-section" class="hidden">
+            <!-- 支出入力 -->
+            <div class="section">
+                <h2>💰 支出入力</h2>
+                <div class="form-group">
+                    <label for="payer">支払った人</label>
+                    <select id="payer" required>
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">金額</label>
+                    <input type="number" id="amount" placeholder="1000" required min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">内容</label>
+                    <input type="text" id="description" placeholder="例: ランチ代">
+                </div>
+                
+                <div class="form-group">
+                    <label>割り勘対象者（複数選択可）</label>
+                    <div id="participants" class="checkbox-group"></div>
+                </div>
+                
+                <button type="button" onclick="addExpense()">支出を追加</button>
+            </div>
+
+            <!-- 支出履歴 -->
+            <div class="section">
+                <h2>📋 支出履歴</h2>
+                <ul id="expense-list" class="expense-list"></ul>
+            </div>
+
+            <!-- 清算結果 -->
+            <div class="section">
+                <h2>🧮 清算結果</h2>
+                <div id="summary" class="summary"></div>
+                <ul id="settlement-list" class="settlement-list"></ul>
+            </div>
+
+            <!-- グループ共有 -->
+            <div class="section">
+                <h2>📤 グループ共有</h2>
+                <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+                    QRコードやリンクで他のメンバーとグループを共有できます
+                </p>
+                <button type="button" onclick="showShareDialog()" style="background: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                    🔗 共有リンク＆QRコード
+                </button>
+            </div>
+
+            <!-- データ管理 -->
+            <div class="section">
+                <h2>⚙️ データ管理</h2>
+                <button type="button" class="danger" onclick="clearData()">すべてのデータをクリア</button>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                    ⚠️ この操作により、グループ情報・メンバー・支出履歴がすべて削除されます
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let members = [];
+        let expenses = [];
+        let groupName = '';
+
+        // データ保存機能
+        function saveData() {
+            const data = {
+                groupName: groupName,
+                members: members,
+                expenses: expenses,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('travelSplitData', JSON.stringify(data));
+        }
+
+        // データ読み込み機能
+        function loadData() {
+            const savedData = localStorage.getItem('travelSplitData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    groupName = data.groupName || '';
+                    members = data.members || [];
+                    expenses = data.expenses || [];
+                    return true;
+                } catch (e) {
+                    console.error('データの読み込みに失敗しました:', e);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        // データクリア機能
+        function clearData() {
+            if (confirm('すべてのデータをクリアしますか？この操作は取り消せません。')) {
+                localStorage.removeItem('travelSplitData');
+                members = [];
+                expenses = [];
+                groupName = '';
+                
+                // UIをリセット
+                document.getElementById('group-name').value = '';
+                updateMemberList();
+                updateStartButton();
+                document.getElementById('expense-list').innerHTML = '';
+                document.getElementById('summary').innerHTML = '';
+                document.getElementById('settlement-list').innerHTML = '';
+                
+                // グループ設定画面に戻る
+                document.getElementById('group-setup').classList.remove('hidden');
+                document.getElementById('main-section').classList.add('hidden');
+                document.querySelector('.header h1').textContent = '🧳 TravelSplit';
+                
+                alert('データをクリアしました');
+            }
+        }
+
+        // データ圧縮・エンコード機能
+        function encodeShareData() {
+            const shareData = {
+                groupName: groupName,
+                members: members,
+                expenses: expenses,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            // JSON文字列化 → Base64エンコード → URLセーフに変換
+            const jsonString = JSON.stringify(shareData);
+            const base64String = btoa(unescape(encodeURIComponent(jsonString)));
+            return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+
+        // データデコード・展開機能
+        function decodeShareData(encodedData) {
+            try {
+                // URLセーフ文字を元に戻す
+                let base64String = encodedData.replace(/-/g, '+').replace(/_/g, '/');
+                
+                // パディングを追加
+                while (base64String.length % 4) {
+                    base64String += '=';
+                }
+                
+                // Base64デコード → JSON パース
+                const jsonString = decodeURIComponent(escape(atob(base64String)));
+                const shareData = JSON.parse(jsonString);
+                
+                return shareData;
+            } catch (e) {
+                console.error('共有データのデコードに失敗しました:', e);
+                return null;
+            }
+        }
+
+        // 共有リンク生成機能
+        function generateShareLink() {
+            if (members.length === 0) {
+                alert('メンバーが登録されていません');
+                return;
+            }
+            
+            const encodedData = encodeShareData();
+            const currentUrl = window.location.href.split('?')[0]; // パラメータを除去
+            const shareUrl = `${currentUrl}?share=${encodedData}`;
+            
+            // クリップボードにコピー
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('共有リンクをクリップボードにコピーしました！\n\nLINEやメールで共有してください。');
+            }).catch((err) => {
+                // フォールバック：テキストエリアで選択状態にする
+                const textarea = document.createElement('textarea');
+                textarea.value = shareUrl;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('共有リンクをクリップボードにコピーしました！');
+            });
+            
+            return shareUrl;
+        }
+
+        // QRコード生成機能
+        function generateQRCode(text) {
+            // QRコード生成ライブラリを使用（後で実装）
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+            return qrCodeUrl;
+        }
+
+        // 共有リンクとQRコード表示機能
+        function showShareDialog() {
+            if (members.length === 0) {
+                alert('メンバーが登録されていません');
+                return;
+            }
+            
+            const shareUrl = generateShareLink();
+            const qrCodeUrl = generateQRCode(shareUrl);
+            
+            // モーダルダイアログを作成
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; max-width: 400px; text-align: center;">
+                    <h3>📤 グループを共有</h3>
+                    <p style="margin: 15px 0;">QRコードを読み取るか、リンクを共有してください</p>
+                    <div style="margin: 20px 0;">
+                        <img src="${qrCodeUrl}" alt="QRコード" style="max-width: 200px; border: 1px solid #ddd;">
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <input type="text" value="${shareUrl}" readonly 
+                               style="width: 100%; padding: 8px; font-size: 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <button onclick="navigator.clipboard.writeText('${shareUrl}'); alert('コピーしました!');" 
+                                style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin: 5px;">
+                            📋 リンクをコピー
+                        </button>
+                        <button onclick="document.body.removeChild(this.closest('[style*=\"position: fixed\"]'));" 
+                                style="background: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin: 5px;">
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // メンバー追加
+        function addMember() {
+            const nameInput = document.getElementById('member-name');
+            const name = nameInput.value.trim();
+            
+            if (name === '') {
+                alert('名前を入力してください');
+                return;
+            }
+            
+            if (members.includes(name)) {
+                alert('すでに登録されているメンバーです');
+                return;
+            }
+            
+            members.push(name);
+            nameInput.value = '';
+            updateMemberList();
+            updateStartButton();
+            saveData();
+        }
+
+        // メンバーリスト更新
+        function updateMemberList() {
+            const memberList = document.getElementById('member-list');
+            memberList.innerHTML = '';
+            
+            members.forEach((member, index) => {
+                const li = document.createElement('li');
+                li.className = 'member-item';
+                li.innerHTML = `
+                    <span>${member}</span>
+                    <button class="danger" onclick="removeMember(${index})">削除</button>
+                `;
+                memberList.appendChild(li);
+            });
+        }
+
+        // メンバー削除
+        function removeMember(index) {
+            members.splice(index, 1);
+            updateMemberList();
+            updateStartButton();
+            saveData();
+        }
+
+        // 計算開始ボタンの状態更新
+        function updateStartButton() {
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = members.length < 2;
+        }
+
+        // 計算開始
+        function startCalculation() {
+            const groupNameInput = document.getElementById('group-name');
+            groupName = groupNameInput.value.trim();
+            
+            if (groupName === '') {
+                alert('グループ名を入力してください');
+                return;
+            }
+            
+            if (members.length < 2) {
+                alert('メンバーは2人以上必要です');
+                return;
+            }
+            
+            // UIを更新
+            document.getElementById('group-setup').classList.add('hidden');
+            document.getElementById('main-section').classList.remove('hidden');
+            
+            // ページタイトル更新
+            document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+            
+            // 支払者選択肢を更新
+            updatePayerOptions();
+            updateParticipantOptions();
+            saveData();
+        }
+
+        // 支払者選択肢更新
+        function updatePayerOptions() {
+            const payerSelect = document.getElementById('payer');
+            payerSelect.innerHTML = '<option value="">選択してください</option>';
+            
+            members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member;
+                option.textContent = member;
+                payerSelect.appendChild(option);
+            });
+        }
+
+        // 参加者チェックボックス更新
+        function updateParticipantOptions() {
+            const participantsDiv = document.getElementById('participants');
+            participantsDiv.innerHTML = '';
+            
+            members.forEach(member => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="participant-${member}" value="${member}" checked>
+                    <label for="participant-${member}">${member}</label>
+                `;
+                participantsDiv.appendChild(div);
+            });
+        }
+
+        // 支出追加
+        function addExpense() {
+            const payer = document.getElementById('payer').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const description = document.getElementById('description').value.trim();
+            
+            if (!payer) {
+                alert('支払った人を選択してください');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('正しい金額を入力してください');
+                return;
+            }
+            
+            // 参加者を取得
+            const participantCheckboxes = document.querySelectorAll('#participants input[type="checkbox"]:checked');
+            const participants = Array.from(participantCheckboxes).map(cb => cb.value);
+            
+            if (participants.length === 0) {
+                alert('割り勘対象者を最低1人選択してください');
+                return;
+            }
+            
+            // 支出を追加
+            const expense = {
+                id: Date.now(),
+                payer,
+                amount,
+                description: description || '支出',
+                participants,
+                timestamp: new Date()
+            };
+            
+            expenses.push(expense);
+            
+            // フォームをリセット
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+            
+            // 表示を更新
+            updateExpenseList();
+            calculateSettlement();
+            saveData();
+        }
+
+        // 支出履歴更新
+        function updateExpenseList() {
+            const expenseList = document.getElementById('expense-list');
+            expenseList.innerHTML = '';
+            
+            expenses.forEach((expense, index) => {
+                const li = document.createElement('li');
+                li.className = 'expense-item';
+                li.innerHTML = `
+                    <div class="expense-details">
+                        <strong>${expense.description}</strong><br>
+                        支払者: ${expense.payer} | 金額: ¥${expense.amount.toLocaleString()}<br>
+                        対象者: ${expense.participants.join(', ')}
+                    </div>
+                    <button class="danger" onclick="removeExpense(${index})">削除</button>
+                `;
+                expenseList.appendChild(li);
+            });
+        }
+
+        // 支出削除
+        function removeExpense(index) {
+            expenses.splice(index, 1);
+            updateExpenseList();
+            calculateSettlement();
+            saveData();
+        }
+
+        // 清算計算
+        function calculateSettlement() {
+            if (expenses.length === 0) {
+                document.getElementById('summary').innerHTML = '<p>支出データがありません</p>';
+                document.getElementById('settlement-list').innerHTML = '';
+                return;
+            }
+            
+            // 各メンバーの収支を計算
+            const balances = {};
+            members.forEach(member => {
+                balances[member] = 0;
+            });
+            
+            expenses.forEach(expense => {
+                const perPersonAmount = expense.amount / expense.participants.length;
+                
+                // 支払者は支払額分プラス
+                balances[expense.payer] += expense.amount;
+                
+                // 参加者は負担額分マイナス
+                expense.participants.forEach(participant => {
+                    balances[participant] -= perPersonAmount;
+                });
+            });
+            
+            // 1円単位で調整
+            Object.keys(balances).forEach(member => {
+                balances[member] = Math.round(balances[member]);
+            });
+            
+            // 清算プランを計算
+            const settlements = calculateOptimalSettlement(balances);
+            
+            // 結果を表示
+            displayResults(balances, settlements);
+        }
+
+        // 最適化清算アルゴリズム
+        function calculateOptimalSettlement(balances) {
+            const settlements = [];
+            
+            // 債権者と債務者に分類
+            const creditors = [];
+            const debtors = [];
+            
+            Object.keys(balances).forEach(member => {
+                if (balances[member] > 0) {
+                    creditors.push({ name: member, amount: balances[member] });
+                } else if (balances[member] < 0) {
+                    debtors.push({ name: member, amount: -balances[member] });
+                }
+            });
+            
+            // 金額でソート
+            creditors.sort((a, b) => b.amount - a.amount);
+            debtors.sort((a, b) => b.amount - a.amount);
+            
+            // 清算を計算
+            while (creditors.length > 0 && debtors.length > 0) {
+                const creditor = creditors[0];
+                const debtor = debtors[0];
+                
+                const transferAmount = Math.min(creditor.amount, debtor.amount);
+                
+                if (transferAmount > 0) {
+                    settlements.push({
+                        from: debtor.name,
+                        to: creditor.name,
+                        amount: transferAmount
+                    });
+                }
+                
+                creditor.amount -= transferAmount;
+                debtor.amount -= transferAmount;
+                
+                if (creditor.amount === 0) {
+                    creditors.shift();
+                }
+                if (debtor.amount === 0) {
+                    debtors.shift();
+                }
+            }
+            
+            return settlements;
+        }
+
+        // 結果表示
+        function displayResults(balances, settlements) {
+            const summary = document.getElementById('summary');
+            const settlementList = document.getElementById('settlement-list');
+            
+            // 総額を計算
+            const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const perPersonAverage = totalAmount / members.length;
+            
+            // サマリー表示
+            summary.innerHTML = `
+                <h3>💰 支出サマリー</h3>
+                <p><strong>総支出額:</strong> ¥${totalAmount.toLocaleString()}</p>
+                <p><strong>一人当たり平均:</strong> ¥${Math.round(perPersonAverage).toLocaleString()}</p>
+                <h4>個人収支:</h4>
+                <ul>
+                    ${members.map(member => {
+                        const balance = balances[member];
+                        const status = balance > 0 ? '受取' : balance < 0 ? '支払' : 'なし';
+                        const color = balance > 0 ? 'green' : balance < 0 ? 'red' : 'black';
+                        return `<li style="color: ${color}"><strong>${member}:</strong> ${status} ¥${Math.abs(balance).toLocaleString()}</li>`;
+                    }).join('')}
+                </ul>
+            `;
+            
+            // 清算リスト表示
+            settlementList.innerHTML = '';
+            
+            if (settlements.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'settlement-item';
+                li.innerHTML = '✅ 清算不要です！';
+                settlementList.appendChild(li);
+            } else {
+                settlements.forEach(settlement => {
+                    const li = document.createElement('li');
+                    li.className = 'settlement-item';
+                    li.innerHTML = `💸 <strong>${settlement.from}</strong> → <strong>${settlement.to}</strong>: ¥${settlement.amount.toLocaleString()}`;
+                    settlementList.appendChild(li);
+                });
+            }
+        }
+
+
+        // URLパラメータからデータ読み込み機能
+        function loadFromShareUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareData = urlParams.get('share');
+            
+            if (shareData) {
+                const decodedData = decodeShareData(shareData);
+                if (decodedData) {
+                    // 共有データを適用
+                    groupName = decodedData.groupName || '';
+                    members = decodedData.members || [];
+                    expenses = decodedData.expenses || [];
+                    
+                    // LocalStorageにも保存
+                    saveData();
+                    
+                    console.log('共有データを読み込みました:', decodedData);
+                    
+                    // URLから共有パラメータを削除（履歴を残さない）
+                    const newUrl = window.location.href.split('?')[0];
+                    window.history.replaceState({}, document.title, newUrl);
+                    
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // ページ読み込み時のデータ復元
+        function initializeApp() {
+            // 1. まずURLパラメータから共有データを読み込み
+            const loadedFromShare = loadFromShareUrl();
+            
+            // 2. 共有データがない場合はLocalStorageから読み込み
+            if (!loadedFromShare) {
+                loadData();
+            }
+            
+            // 3. データがある場合はUIを復元
+            if (groupName && members.length > 0) {
+                // グループ設定をUIに反映
+                document.getElementById('group-name').value = groupName;
+                updateMemberList();
+                updateStartButton();
+                
+                // 計算画面に移行
+                document.getElementById('group-setup').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
+                document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+                
+                // 支払者・参加者選択肢を更新
+                updatePayerOptions();
+                updateParticipantOptions();
+                
+                // 支出履歴を表示
+                updateExpenseList();
+                
+                // 清算結果を計算・表示
+                calculateSettlement();
+                
+                if (loadedFromShare) {
+                    // 共有リンクから読み込んだ場合は通知
+                    setTimeout(() => {
+                        alert(`📤 共有されたグループ「${groupName}」を読み込みました！\n\n支出を追加して割り勘計算を続けてください。`);
+                    }, 500);
+                }
+                
+                console.log(loadedFromShare ? '共有データを復元しました' : '保存されたデータを復元しました');
+            } else {
+                // 部分的なデータがある場合はグループ設定画面で表示
+                if (groupName) {
+                    document.getElementById('group-name').value = groupName;
+                }
+                if (members.length > 0) {
+                    updateMemberList();
+                    updateStartButton();
+                }
+            }
+        }
+
+        // Enterキーでのメンバー追加
+        document.getElementById('member-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addMember();
+            }
+        });
+
+        // ページ読み込み完了時にデータ復元を実行
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
