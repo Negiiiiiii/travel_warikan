@@ -1102,8 +1102,159 @@
             };
             localStorage.setItem('travelSplitData', JSON.stringify(data));
             
+            // アプリ状態も保存
+            saveAppState();
+            
             // Firebaseに保存（リアルタイム同期）
             saveToFirebase();
+        }
+
+        // アプリ状態保存機能
+        function saveAppState() {
+            const appState = {
+                currentPage: getCurrentPage(),
+                currentTab: getCurrentTab(),
+                currentGroupId: currentGroupId,
+                lastUpdated: Date.now()
+            };
+            localStorage.setItem('appState', JSON.stringify(appState));
+        }
+
+        // 現在のページを取得
+        function getCurrentPage() {
+            if (!document.getElementById('group-setup').classList.contains('hidden')) return 'setup';
+            if (!document.getElementById('main-section').classList.contains('hidden')) return 'main';
+            if (!document.getElementById('dashboard-section').classList.contains('hidden')) return 'dashboard';
+            return 'setup';
+        }
+
+        // 現在のタブを取得
+        function getCurrentTab() {
+            const activeTab = document.querySelector('.tab-button.active');
+            if (activeTab) {
+                return activeTab.dataset.tab;
+            }
+            return 'input';
+        }
+
+        // アプリ状態読み込み機能
+        function loadAppState() {
+            const saved = localStorage.getItem('appState');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error('アプリ状態の読み込みに失敗:', e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // グループデータの安全な読み込み機能
+        async function loadGroupDataById(groupId) {
+            // グループ履歴から該当グループを検索
+            const groupInfo = groupHistory.find(g => g.id === groupId);
+            
+            if (!groupInfo) {
+                console.log('グループ履歴にグループが見つかりません:', groupId);
+                return null;
+            }
+
+            // まずLocalStorageから読み込み試行
+            const savedData = localStorage.getItem('travelSplitData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    if (data.groupId === groupId) {
+                        return {
+                            groupName: data.groupName || '',
+                            members: data.members || [],
+                            expenses: data.expenses || [],
+                            groupId: data.groupId
+                        };
+                    }
+                } catch (e) {
+                    console.error('LocalStorageからの読み込みエラー:', e);
+                }
+            }
+
+            // LocalStorageにない場合はFirebaseから読み込み
+            return await loadGroupFromFirebase(groupId);
+        }
+
+        // Firebaseからのグループデータ読み込み
+        async function loadGroupFromFirebase(groupId) {
+            try {
+                const groupRef = firebase.database().ref('groups/' + groupId);
+                const snapshot = await groupRef.once('value');
+                const data = snapshot.val();
+                
+                if (data) {
+                    return {
+                        groupName: data.groupName || '',
+                        members: data.members || [],
+                        expenses: data.expenses || [],
+                        groupId: groupId
+                    };
+                }
+            } catch (e) {
+                console.error('Firebaseからの読み込みエラー:', e);
+            }
+            return null;
+        }
+
+        // 状態復元機能
+        function restoreToState(appState, groupData) {
+            // グループデータを設定
+            groupName = groupData.groupName;
+            members = groupData.members;
+            expenses = groupData.expenses;
+            currentGroupId = groupData.groupId;
+
+            // UIを復元
+            document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+            updatePayerOptions();
+            updateParticipantOptions();
+            updateExpenseList();
+            calculateSettlement();
+
+            // ページを復元
+            if (appState.currentPage === 'main') {
+                document.getElementById('group-setup').classList.add('hidden');
+                document.getElementById('group-history').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
+                document.getElementById('dashboard-section').classList.add('hidden');
+                
+                // タブを復元
+                if (appState.currentTab) {
+                    switchTab(appState.currentTab);
+                }
+            } else if (appState.currentPage === 'dashboard') {
+                document.getElementById('group-setup').classList.add('hidden');
+                document.getElementById('group-history').classList.add('hidden');
+                document.getElementById('main-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                updateDashboard();
+            }
+
+            // 新しいグループボタンを表示
+            document.getElementById('home-button-container').classList.remove('hidden');
+
+            // Firebase監視を開始
+            watchFirebaseData(currentGroupId);
+
+            console.log('状態を復元しました:', appState);
+        }
+
+        // ホームページ表示
+        function showHomePage() {
+            document.getElementById('group-setup').classList.remove('hidden');
+            document.getElementById('group-history').classList.remove('hidden');
+            document.getElementById('main-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('home-button-container').classList.add('hidden');
+            document.querySelector('.header h1').textContent = '🧳 旅行費用計算アプリ';
         }
 
         // データ読み込み機能
@@ -1794,79 +1945,54 @@
         }
 
         // ページ読み込み時のデータ復元
-        function initializeApp() {
-            // 1. まずURLパラメータから共有データを読み込み
+        async function initializeApp() {
+            // 1. 共有リンクチェック（最優先）
             const loadedFromShare = loadFromShareUrl();
-            
-            // 2. 共有データがない場合はLocalStorageから読み込み
-            if (!loadedFromShare) {
-                loadData();
-            }
-            
-            // 3. データがある場合はUIを復元
-            if (groupName && members.length > 0) {
-                // グループ設定をUIに反映
-                document.getElementById('group-name').value = groupName;
-                updateMemberList();
-                updateStartButton();
-                
-                // 計算画面に移行
-                document.getElementById('group-setup').classList.add('hidden');
-                document.getElementById('group-history').classList.add('hidden');
-                document.getElementById('main-section').classList.remove('hidden');
-                document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
-                
-                // 新しいグループボタンを表示
-                document.getElementById('home-button-container').classList.remove('hidden');
-                
-                // グループ履歴に追加
-                addToGroupHistory({
-                    id: currentGroupId,
-                    name: groupName,
-                    memberCount: members.length,
-                    expenseCount: expenses.length
-                });
-                
-                // 支払者・参加者選択肢を更新
-                updatePayerOptions();
-                updateParticipantOptions();
-                
-                // 支出履歴を表示
-                updateExpenseList();
-                
-                // 清算結果を計算・表示
-                calculateSettlement();
-                
-                // Firebase監視を開始（まだ開始されていない場合）
-                if (currentGroupId && !loadedFromShare) {
-                    watchFirebaseData(currentGroupId);
-                }
-                
-                if (loadedFromShare) {
-                    // 共有リンクから読み込んだ場合は通知
-                    setTimeout(() => {
-                        showNotification(`📤 共有されたグループに参加しました！\nリアルタイム同期が有効です。`);
-                    }, 1000);
-                }
-                
-                console.log(loadedFromShare ? '共有データを復元しました' : '保存されたデータを復元しました');
-            } else if (currentGroupId) {
-                // GroupIDがあるがデータがまだ来ていない場合（Firebase待ち）
+            if (loadedFromShare) {
+                // 共有リンクの場合は従来の処理で直接グループ画面へ
                 setTimeout(() => {
-                    if (!groupName && currentGroupId) {
-                        showNotification('🔄 グループデータを読み込み中...');
+                    showNotification(`📤 共有されたグループに参加しました！\nリアルタイム同期が有効です。`);
+                }, 1000);
+                console.log('共有データを復元しました');
+                return;
+            }
+            
+            // 2. アプリ状態を復元
+            const appState = loadAppState();
+            
+            if (appState && appState.currentGroupId) {
+                console.log('アプリ状態を検出:', appState);
+                
+                // 3. 指定されたグループIDでデータを復元
+                try {
+                    const groupData = await loadGroupDataById(appState.currentGroupId);
+                    
+                    if (groupData) {
+                        // 4. データ復元成功 → 前の状態に戻る
+                        restoreToState(appState, groupData);
+                        
+                        // グループ履歴に追加（重複チェック付き）
+                        const existingGroup = groupHistory.find(g => g.id === groupData.groupId);
+                        if (!existingGroup) {
+                            addToGroupHistory({
+                                id: groupData.groupId,
+                                name: groupData.groupName,
+                                memberCount: groupData.members.length,
+                                expenseCount: groupData.expenses.length
+                            });
+                        }
+                        
+                        console.log('状態とデータを正常に復元しました');
+                        return;
                     }
-                }, 2000);
-            } else {
-                // 部分的なデータがある場合はグループ設定画面で表示
-                if (groupName) {
-                    document.getElementById('group-name').value = groupName;
-                }
-                if (members.length > 0) {
-                    updateMemberList();
-                    updateStartButton();
+                } catch (error) {
+                    console.error('グループデータの読み込みエラー:', error);
                 }
             }
+            
+            // 5. 状態情報がない、または復元に失敗した場合はトップページへ
+            showHomePage();
+            console.log('トップページを表示しました');
         }
 
         // ダッシュボード画面表示
@@ -1884,12 +2010,18 @@
             
             // 接続状態を同期
             updateConnectionStatus();
+            
+            // 状態を保存
+            saveAppState();
         }
 
         // メイン画面表示
         function showMainScreen() {
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('main-section').classList.remove('hidden');
+            
+            // 状態を保存
+            saveAppState();
         }
 
         // 初期画面に戻る
@@ -2428,10 +2560,18 @@
             });
             
             // 選択されたタブボタンに active クラスを追加
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // プログラム的な呼び出しの場合
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            }
             
             // 選択されたタブコンテンツを表示
             document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // 状態を保存
+            saveAppState();
             
             // タブ切り替え時は再初期化不要（イベント委譲で対応済み）
         }
@@ -2445,9 +2585,9 @@
 
         // ページ読み込み完了時にデータ復元を実行
         document.addEventListener('DOMContentLoaded', function() {
+            loadGroupHistory(); // まずグループ履歴を読み込み
             initializeApp();
             initializeTagSystem(); // タグシステムを初期化
-            loadGroupHistory(); // グループ履歴を読み込み
         });
     </script>
 </body>
