@@ -165,6 +165,315 @@
         }
         
         
+        .tag-selector {
+            margin-bottom: 10px;
+        }
+        
+        .preset-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .preset-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: fit-content;
+            width: auto;
+        }
+        
+        .preset-tag:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .preset-tag.selected {
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+            transform: scale(1.1);
+        }
+        
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 30px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #dee2e6;
+        }
+        
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            background: #e9ecef;
+            color: #495057;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .selected-tag .remove-tag {
+            margin-left: 6px;
+            cursor: pointer;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .expense-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        /* グループ履歴用スタイル */
+        .group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .group-item:hover {
+            background: #e9ecef;
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .group-info h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .group-details {
+            font-size: 13px;
+            color: #6c757d;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .group-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .group-join-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .group-join-btn:hover {
+            background: #2980b9;
+        }
+        
+        .group-remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .group-remove-btn:hover {
+            background: #c82333;
+        }
+        
+        /* 支出追加ボタン専用スタイル */
+        .add-expense-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .add-expense-btn:hover {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
+        }
+        
+        .add-expense-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+        }
+
+        /* タブナビゲーション用スタイル */
+        .tab-navigation {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-align: center;
+        }
+        
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .tab-button.active {
+            background: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ダッシュボード用スタイル */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .dashboard-card h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tag-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .tag-stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tag-stat-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tag-stat-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .summary-stat {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 8px;
+        }
+        
+        .summary-stat .value {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .summary-stat .label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -173,19 +482,66 @@
             .checkbox-group {
                 flex-direction: column;
             }
+            
+            .preset-tags {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: flex-start;
+            }
+            
+            .preset-tag {
+                text-align: center;
+                flex-shrink: 0;
+                min-width: fit-content;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .tab-button {
+                font-size: 12px;
+                padding: 10px 8px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧳 TravelSplit</h1>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <h1>🧳 TravelSplit</h1>
+                </div>
+                <div id="home-button-container" class="hidden">
+                    <button onclick="returnToHome()" style="background: #95a5a6; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        🏠 新しいグループ
+                    </button>
+                </div>
+            </div>
             <p>旅行費用の割り勘計算を簡単に</p>
             <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
                 💡 グループを作成後、QRコードやリンクで簡単に共有できます
             </p>
             <div id="connection-status" style="font-size: 12px; margin-top: 5px; font-weight: 500;">
                 🔄 接続中...
+            </div>
+        </div>
+        
+        <!-- 参加済みグループ一覧セクション -->
+        <div id="group-history" class="section">
+            <h2>📋 参加済みグループ</h2>
+            <div id="group-list" class="group-list">
+                <p style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">
+                    まだ参加したグループがありません
+                </p>
             </div>
         </div>
 
@@ -213,65 +569,163 @@
 
         <!-- メイン計算セクション -->
         <div id="main-section" class="hidden">
-            <!-- 支出入力 -->
-            <div class="section">
-                <h2>💰 支出入力</h2>
-                <div class="form-group">
-                    <label for="payer">支払った人</label>
-                    <select id="payer" required>
-                        <option value="">選択してください</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="amount">金額</label>
-                    <input type="number" id="amount" placeholder="1000" required min="0">
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">内容</label>
-                    <input type="text" id="description" placeholder="例: ランチ代">
-                </div>
-                
-                <div class="form-group">
-                    <label>割り勘対象者（複数選択可）</label>
-                    <div id="participants" class="checkbox-group"></div>
-                </div>
-                
-                <button type="button" onclick="addExpense()">支出を追加</button>
+            <!-- タブナビゲーション -->
+            <div class="tab-navigation">
+                <button class="tab-button active" onclick="switchTab('input')">💰 入力</button>
+                <button class="tab-button" onclick="switchTab('history')">📋 履歴</button>
+                <button class="tab-button" onclick="switchTab('settlement')">🧮 清算</button>
+                <button class="tab-button" onclick="switchTab('settings')">⚙️ 設定</button>
             </div>
 
-            <!-- 支出履歴 -->
-            <div class="section">
-                <h2>📋 支出履歴</h2>
-                <ul id="expense-list" class="expense-list"></ul>
+            <!-- 支出入力タブ -->
+            <div id="input-tab" class="tab-content active">
+                <div class="section">
+                    <div class="form-group">
+                        <label for="payer">支払った人</label>
+                        <select id="payer" required>
+                            <option value="">選択してください</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amount">金額</label>
+                        <input type="number" id="amount" placeholder="1000" required min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">内容</label>
+                        <input type="text" id="description" placeholder="例: ランチ代">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tags">タグ（カテゴリ）</label>
+                        <div class="tag-selector">
+                            <div class="preset-tags">
+                                <span class="preset-tag" data-tag="食事" style="background: #e74c3c;">🍽️ 食事</span>
+                                <span class="preset-tag" data-tag="交通費" style="background: #3498db;">🚗 交通費</span>
+                                <span class="preset-tag" data-tag="宿泊費" style="background: #9b59b6;">🏨 宿泊費</span>
+                                <span class="preset-tag" data-tag="娯楽" style="background: #f39c12;">🎮 娯楽</span>
+                                <span class="preset-tag" data-tag="買い物" style="background: #27ae60;">🛒 買い物</span>
+                                <span class="preset-tag" data-tag="その他" style="background: #95a5a6;">📋 その他</span>
+                            </div>
+                            <div class="custom-tag-input" style="margin-top: 10px;">
+                                <input type="text" id="custom-tag" placeholder="独自のタグを入力" style="width: 150px; margin-right: 10px;">
+                                <button type="button" onclick="addCustomTag()" style="background: #34495e; color: white; padding: 8px 15px; border: none; border-radius: 4px;">追加</button>
+                            </div>
+                        </div>
+                        <div id="selected-tags" class="selected-tags" style="margin-top: 10px;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>割り勘対象者（複数選択可）</label>
+                        <div id="participants" class="checkbox-group"></div>
+                    </div>
+                    
+                    <button type="button" onclick="addExpense()" class="add-expense-btn">
+                        💰 支出を追加
+                    </button>
+                </div>
             </div>
 
-            <!-- 清算結果 -->
-            <div class="section">
-                <h2>🧮 清算結果</h2>
-                <div id="summary" class="summary"></div>
-                <ul id="settlement-list" class="settlement-list"></ul>
+            <!-- 支出履歴タブ -->
+            <div id="history-tab" class="tab-content">
+                <div class="section">
+                    <div id="tag-filter-section" style="margin-bottom: 15px; display: none;">
+                        <label for="tag-filter" style="font-weight: bold;">タグで絞り込み:</label>
+                        <select id="tag-filter" onchange="filterExpensesByTag()" style="margin-left: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="">すべて表示</option>
+                        </select>
+                        <div id="tag-summary" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; display: none;"></div>
+                    </div>
+                    <ul id="expense-list" class="expense-list"></ul>
+                </div>
             </div>
 
-            <!-- グループ共有 -->
-            <div class="section">
-                <h2>📤 グループ共有</h2>
-                <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
-                    QRコードやリンクで他のメンバーとグループを共有できます
-                </p>
-                <button type="button" onclick="showShareDialog()" style="background: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
-                    🔗 共有リンク＆QRコード
+            <!-- 清算結果タブ -->
+            <div id="settlement-tab" class="tab-content">
+                <div class="section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span></span>
+                        <button onclick="showDashboard()" style="background: #9b59b6; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            📊 ダッシュボード表示
+                        </button>
+                    </div>
+                    <div id="summary" class="summary"></div>
+                    <ul id="settlement-list" class="settlement-list"></ul>
+                </div>
+            </div>
+
+            <!-- 設定タブ -->
+            <div id="settings-tab" class="tab-content">
+                <div class="section">
+                    <h3>📤 グループ共有</h3>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+                        QRコードやリンクで他のメンバーとグループを共有できます
+                    </p>
+                    <button type="button" onclick="showShareDialog()" style="background: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                        🔗 共有リンク＆QRコード
+                    </button>
+                </div>
+
+                <div class="section">
+                    <h3>⚙️ データ管理</h3>
+                    <button type="button" class="danger" onclick="clearData()">すべてのデータをクリア</button>
+                    <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                        ⚠️ この操作により、グループ情報・メンバー・支出履歴がすべて削除されます
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ダッシュボード画面 -->
+    <div id="dashboard-section" class="hidden">
+        <div class="header">
+            <h1>📊 支出ダッシュボード</h1>
+            <div class="header-actions">
+                <div class="connection-status" id="connection-status-dashboard">
+                    <span class="status-indicator" id="status-indicator-dashboard"></span>
+                    <span id="connection-text-dashboard">接続中...</span>
+                </div>
+                <button onclick="showMainScreen()" style="background: #3498db; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                    ← 計算画面に戻る
                 </button>
             </div>
+        </div>
 
-            <!-- データ管理 -->
+        <div class="container">
+            <!-- 全体サマリー -->
             <div class="section">
-                <h2>⚙️ データ管理</h2>
-                <button type="button" class="danger" onclick="clearData()">すべてのデータをクリア</button>
-                <p style="font-size: 14px; color: #666; margin-top: 10px;">
-                    ⚠️ この操作により、グループ情報・メンバー・支出履歴がすべて削除されます
-                </p>
+                <h2>💰 全体サマリー</h2>
+                <div id="overall-summary" class="summary-stats"></div>
+            </div>
+
+            <!-- ダッシュボードグリッド -->
+            <div class="dashboard-grid">
+                <!-- タグ別支出統計 -->
+                <div class="dashboard-card">
+                    <h3>🏷️ タグ別支出統計</h3>
+                    <div id="tag-statistics"></div>
+                </div>
+
+
+                <!-- 月別推移 -->
+                <div class="dashboard-card">
+                    <h3>📈 支出推移</h3>
+                    <div id="expense-trends"></div>
+                </div>
+
+                <!-- タグ別平均金額 -->
+                <div class="dashboard-card">
+                    <h3>📊 タグ別平均金額</h3>
+                    <div id="tag-averages"></div>
+                </div>
+            </div>
+
+            <!-- 詳細分析 -->
+            <div class="section">
+                <h2>🔍 詳細分析</h2>
+                <div id="detailed-analysis"></div>
             </div>
         </div>
     </div>
@@ -453,10 +907,24 @@
 
         // 接続状態表示の更新
         function updateConnectionStatus() {
+            // メイン画面の接続状態
             const statusElement = document.getElementById('connection-status');
             if (statusElement) {
                 statusElement.style.color = isFirebaseConnected ? '#27ae60' : '#e74c3c';
                 statusElement.textContent = isFirebaseConnected ? '🟢 オンライン同期中' : '🔴 オフライン';
+            }
+            
+            // ダッシュボード画面の接続状態
+            const dashboardStatusElement = document.getElementById('connection-status-dashboard');
+            if (dashboardStatusElement) {
+                dashboardStatusElement.style.color = isFirebaseConnected ? '#27ae60' : '#e74c3c';
+                const textElement = document.getElementById('connection-text-dashboard');
+                const indicatorElement = document.getElementById('status-indicator-dashboard');
+                
+                if (textElement && indicatorElement) {
+                    textElement.textContent = isFirebaseConnected ? 'オンライン同期中' : 'オフライン';
+                    indicatorElement.style.backgroundColor = isFirebaseConnected ? '#27ae60' : '#e74c3c';
+                }
             }
         }
 
@@ -488,6 +956,97 @@
         let members = [];
         let expenses = [];
         let groupName = '';
+        let selectedTags = []; // 選択されたタグを管理
+        let groupHistory = []; // 参加済みグループ履歴
+
+        // タグカラーマップ
+        const tagColors = {
+            '食事': '#e74c3c',
+            '交通費': '#3498db', 
+            '宿泊費': '#9b59b6',
+            '娯楽': '#f39c12',
+            '買い物': '#27ae60',
+            'その他': '#95a5a6'
+        };
+
+        // タグ管理機能
+        function initializeTagSystem() {
+            // プリセットタグクリック
+            document.querySelectorAll('.preset-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const tagName = this.dataset.tag;
+                    toggleTag(tagName, tagColors[tagName] || '#6c757d');
+                });
+            });
+        }
+
+        // タグの選択/選択解除
+        function toggleTag(tagName, color) {
+            const existingIndex = selectedTags.findIndex(tag => tag.name === tagName);
+            
+            if (existingIndex >= 0) {
+                // 既に選択済み → 削除
+                selectedTags.splice(existingIndex, 1);
+            } else {
+                // 新規選択
+                selectedTags.push({ name: tagName, color: color });
+            }
+            
+            updateSelectedTagsDisplay();
+        }
+
+        // カスタムタグ追加
+        function addCustomTag() {
+            const customTagInput = document.getElementById('custom-tag');
+            const tagName = customTagInput.value.trim();
+            
+            if (tagName === '') {
+                alert('タグ名を入力してください');
+                return;
+            }
+            
+            if (selectedTags.some(tag => tag.name === tagName)) {
+                alert('そのタグは既に選択されています');
+                return;
+            }
+            
+            // ランダムカラー生成
+            const colors = ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#27ae60', '#e67e22', '#1abc9c'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            selectedTags.push({ name: tagName, color: randomColor });
+            customTagInput.value = '';
+            updateSelectedTagsDisplay();
+        }
+
+        // 選択されたタグの表示更新
+        function updateSelectedTagsDisplay() {
+            const selectedTagsDiv = document.getElementById('selected-tags');
+            
+            if (selectedTags.length === 0) {
+                selectedTagsDiv.innerHTML = '<span style="color: #6c757d; font-style: italic;">タグが選択されていません</span>';
+                return;
+            }
+            
+            selectedTagsDiv.innerHTML = selectedTags.map(tag => 
+                `<span class="selected-tag">
+                    ${tag.name}
+                    <span class="remove-tag" onclick="removeTag('${tag.name}')">&times;</span>
+                </span>`
+            ).join('');
+        }
+
+        // タグ削除
+        function removeTag(tagName) {
+            selectedTags = selectedTags.filter(tag => tag.name !== tagName);
+            updateSelectedTagsDisplay();
+        }
+
+        // 入力フォームリセット時にタグもクリア
+        function clearTagSelection() {
+            selectedTags = [];
+            updateSelectedTagsDisplay();
+        }
 
         // データ保存機能（Firebase + LocalStorage）
         function saveData() {
@@ -753,10 +1312,22 @@
             
             // UIを更新
             document.getElementById('group-setup').classList.add('hidden');
+            document.getElementById('group-history').classList.add('hidden');
             document.getElementById('main-section').classList.remove('hidden');
             
             // ページタイトル更新
             document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+            
+            // 新しいグループボタンを表示
+            document.getElementById('home-button-container').classList.remove('hidden');
+            
+            // グループ履歴に追加
+            addToGroupHistory({
+                id: currentGroupId,
+                name: groupName,
+                memberCount: members.length,
+                expenseCount: expenses.length
+            });
             
             // 支払者選択肢を更新
             updatePayerOptions();
@@ -829,6 +1400,7 @@
                 amount,
                 description: description || '支出',
                 participants,
+                tags: [...selectedTags], // タグ情報を追加
                 timestamp: new Date()
             };
             
@@ -837,6 +1409,7 @@
             // フォームをリセット
             document.getElementById('amount').value = '';
             document.getElementById('description').value = '';
+            clearTagSelection(); // タグ選択もクリア
             
             // 表示を更新
             updateExpenseList();
@@ -849,19 +1422,53 @@
             const expenseList = document.getElementById('expense-list');
             expenseList.innerHTML = '';
             
-            expenses.forEach((expense, index) => {
+            // タグフィルターの選択値を取得
+            const selectedTag = document.getElementById('tag-filter').value;
+            
+            // フィルタリングされた支出リストを取得
+            let filteredExpenses = expenses;
+            if (selectedTag) {
+                filteredExpenses = expenses.filter(expense => 
+                    expense.tags && expense.tags.some(tag => tag.name === selectedTag)
+                );
+            }
+            
+            filteredExpenses.forEach((expense, originalIndex) => {
+                // 元の配列でのインデックスを取得
+                const actualIndex = expenses.indexOf(expense);
+                
                 const li = document.createElement('li');
                 li.className = 'expense-item';
+                
+                // タグ表示用のHTMLを生成
+                let tagsHtml = '';
+                if (expense.tags && expense.tags.length > 0) {
+                    tagsHtml = '<div style="margin-top: 8px;">' +
+                        expense.tags.map(tag => 
+                            `<span class="expense-tag" style="background-color: ${tag.color || '#6c757d'};">${tag.name}</span>`
+                        ).join(' ') + 
+                        '</div>';
+                }
+                
                 li.innerHTML = `
                     <div class="expense-details">
                         <strong>${expense.description}</strong><br>
                         支払者: ${expense.payer} | 金額: ¥${expense.amount.toLocaleString()}<br>
                         対象者: ${expense.participants.join(', ')}
+                        ${tagsHtml}
                     </div>
-                    <button class="danger" onclick="removeExpense(${index})">削除</button>
+                    <button class="danger" onclick="removeExpense(${actualIndex})">削除</button>
                 `;
                 expenseList.appendChild(li);
             });
+            
+            // タグフィルターセクションの表示制御とタグオプション更新
+            updateTagFilterSection();
+            
+            // タグ別サマリーの更新
+            if (selectedTag) {
+                updateTagSummary(selectedTag, filteredExpenses);
+            }
         }
 
         // 支出削除
@@ -870,6 +1477,103 @@
             updateExpenseList();
             calculateSettlement();
             saveData();
+        }
+
+        // タグフィルターセクションの更新
+        function updateTagFilterSection() {
+            const tagFilterSection = document.getElementById('tag-filter-section');
+            const tagFilter = document.getElementById('tag-filter');
+            
+            // 使用されているタグを収集
+            const usedTags = new Set();
+            expenses.forEach(expense => {
+                if (expense.tags) {
+                    expense.tags.forEach(tag => usedTags.add(tag.name));
+                }
+            });
+            
+            // タグが存在する場合のみフィルターセクションを表示
+            if (usedTags.size > 0) {
+                tagFilterSection.style.display = 'block';
+                
+                // 現在の選択を保持
+                const currentSelection = tagFilter.value;
+                
+                // オプションをクリア
+                tagFilter.innerHTML = '<option value="">すべて表示</option>';
+                
+                // タグオプションを追加
+                Array.from(usedTags).sort().forEach(tagName => {
+                    const option = document.createElement('option');
+                    option.value = tagName;
+                    option.textContent = tagName;
+                    tagFilter.appendChild(option);
+                });
+                
+                // 選択を復元
+                if (currentSelection && usedTags.has(currentSelection)) {
+                    tagFilter.value = currentSelection;
+                }
+            } else {
+                tagFilterSection.style.display = 'none';
+            }
+        }
+
+        // タグによる支出フィルタリング
+        function filterExpensesByTag() {
+            const selectedTag = document.getElementById('tag-filter').value;
+            const tagSummary = document.getElementById('tag-summary');
+            
+            if (selectedTag) {
+                tagSummary.style.display = 'block';
+            } else {
+                tagSummary.style.display = 'none';
+            }
+            
+            updateExpenseList();
+        }
+
+        // タグ別サマリーの更新
+        function updateTagSummary(tagName, filteredExpenses) {
+            const tagSummary = document.getElementById('tag-summary');
+            
+            if (filteredExpenses.length === 0) {
+                tagSummary.innerHTML = `<strong>${tagName}</strong> のタグが付いた支出はありません。`;
+                return;
+            }
+            
+            // タグ別の統計を計算
+            const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const expenseCount = filteredExpenses.length;
+            const averageAmount = totalAmount / expenseCount;
+            
+            // 支払者別の統計
+            const payerStats = {};
+            filteredExpenses.forEach(expense => {
+                if (!payerStats[expense.payer]) {
+                    payerStats[expense.payer] = { count: 0, amount: 0 };
+                }
+                payerStats[expense.payer].count++;
+                payerStats[expense.payer].amount += expense.amount;
+            });
+            
+            let payerStatsHtml = '';
+            Object.entries(payerStats).forEach(([payer, stats]) => {
+                payerStatsHtml += `<div>・${payer}: ${stats.count}件 (¥${stats.amount.toLocaleString()})</div>`;
+            });
+            
+            tagSummary.innerHTML = `
+                <strong>📊 ${tagName} タグのサマリー</strong><br>
+                <div style="margin-top: 8px;">
+                    <div>件数: ${expenseCount}件</div>
+                    <div>合計金額: ¥${totalAmount.toLocaleString()}</div>
+                    <div>平均金額: ¥${Math.round(averageAmount).toLocaleString()}</div>
+                </div>
+                <div style="margin-top: 8px;">
+                    <strong>支払者別内訳:</strong><br>
+                    ${payerStatsHtml}
+                </div>
+            `;
         }
 
         // 清算計算
@@ -1066,8 +1770,20 @@
                 
                 // 計算画面に移行
                 document.getElementById('group-setup').classList.add('hidden');
+                document.getElementById('group-history').classList.add('hidden');
                 document.getElementById('main-section').classList.remove('hidden');
                 document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+                
+                // 新しいグループボタンを表示
+                document.getElementById('home-button-container').classList.remove('hidden');
+                
+                // グループ履歴に追加
+                addToGroupHistory({
+                    id: currentGroupId,
+                    name: groupName,
+                    memberCount: members.length,
+                    expenseCount: expenses.length
+                });
                 
                 // 支払者・参加者選択肢を更新
                 updatePayerOptions();
@@ -1111,6 +1827,579 @@
             }
         }
 
+        // ダッシュボード画面表示
+        function showDashboard() {
+            if (expenses.length === 0) {
+                alert('支出データがありません。まず支出を入力してください。');
+                return;
+            }
+            
+            document.getElementById('main-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            
+            // ダッシュボードデータを更新
+            updateDashboard();
+            
+            // 接続状態を同期
+            updateConnectionStatus();
+        }
+
+        // メイン画面表示
+        function showMainScreen() {
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('main-section').classList.remove('hidden');
+        }
+
+        // 初期画面に戻る
+        function returnToHome() {
+            // 確認ダイアログ
+            if (!confirm('新しいグループを作成しますか？\n現在のグループから離れて初期画面に戻ります。')) {
+                return;
+            }
+            
+            // アプリの状態をリセット
+            groupName = '';
+            members = [];
+            expenses = [];
+            currentGroupId = null;
+            selectedTags = [];
+            
+            // Firebaseからの監視を停止
+            if (window.currentGroupRef) {
+                window.currentGroupRef.off();
+                window.currentGroupRef = null;
+            }
+            
+            // UI要素をリセット（存在チェック付き）
+            const resetElement = (id, value = '') => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (element.tagName === 'SELECT') {
+                        element.innerHTML = value || '<option value="">選択してください</option>';
+                    } else if (element.tagName === 'INPUT') {
+                        element.value = value;
+                    } else {
+                        element.innerHTML = value;
+                    }
+                }
+            };
+            
+            resetElement('group-name');
+            resetElement('member-name');
+            resetElement('member-list');
+            resetElement('expense-payer', '<option value="">選択してください</option>');
+            resetElement('expense-amount');
+            resetElement('expense-description');
+            resetElement('participant-checkboxes');
+            resetElement('expense-list');
+            resetElement('settlement-list');
+            
+            // summary要素をリセット（存在する場合のみ）
+            const summaryElement = document.getElementById('summary');
+            if (summaryElement) {
+                summaryElement.innerHTML = '';
+            }
+            
+            // 選択されたタグ表示をリセット
+            const selectedTagsElement = document.getElementById('selected-tags');
+            if (selectedTagsElement) {
+                selectedTagsElement.innerHTML = '<span style="color: #6c757d; font-style: italic;">タグが選択されていません</span>';
+            }
+            
+            // セクションの表示を切り替え
+            document.getElementById('group-setup').classList.remove('hidden');
+            document.getElementById('group-history').classList.remove('hidden');
+            document.getElementById('main-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('home-button-container').classList.add('hidden');
+            
+            // ヘッダーのタイトルをリセット
+            document.querySelector('.header h1').textContent = '🧳 TravelSplit';
+            
+            // タグ選択もリセット
+            clearTagSelection();
+            
+            // 接続状態をリセット
+            document.getElementById('connection-status').innerHTML = '🔄 接続中...';
+            
+            console.log('初期画面に戻りました');
+        }
+
+        // グループ履歴管理機能
+        function addToGroupHistory(groupData) {
+            const existingIndex = groupHistory.findIndex(g => g.id === groupData.id);
+            
+            if (existingIndex !== -1) {
+                // 既存のグループ情報を更新
+                groupHistory[existingIndex] = {
+                    ...groupHistory[existingIndex],
+                    ...groupData,
+                    lastAccessed: new Date().toISOString()
+                };
+            } else {
+                // 新しいグループを追加
+                groupHistory.push({
+                    ...groupData,
+                    lastAccessed: new Date().toISOString()
+                });
+            }
+            
+            // 最近アクセス順でソート
+            groupHistory.sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed));
+            
+            // 最大10個まで保存
+            if (groupHistory.length > 10) {
+                groupHistory = groupHistory.slice(0, 10);
+            }
+            
+            saveGroupHistory();
+            updateGroupList();
+        }
+
+        function saveGroupHistory() {
+            localStorage.setItem('groupHistory', JSON.stringify(groupHistory));
+        }
+
+        function loadGroupHistory() {
+            const saved = localStorage.getItem('groupHistory');
+            if (saved) {
+                groupHistory = JSON.parse(saved);
+                updateGroupList();
+            }
+        }
+
+        function updateGroupList() {
+            const groupListDiv = document.getElementById('group-list');
+            
+            if (groupHistory.length === 0) {
+                groupListDiv.innerHTML = '<p style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">まだ参加したグループがありません</p>';
+                return;
+            }
+            
+            groupListDiv.innerHTML = groupHistory.map(group => {
+                const lastAccessed = new Date(group.lastAccessed);
+                const timeAgo = getTimeAgo(lastAccessed);
+                
+                return `
+                    <div class="group-item" onclick="joinGroup('${group.id}')">
+                        <div class="group-info">
+                            <h3>🧳 ${group.name}</h3>
+                            <div class="group-details">
+                                <span>👥 ${group.memberCount}人</span>
+                                <span>💰 ${group.expenseCount}件の支出</span>
+                                <span>🕒 ${timeAgo}</span>
+                            </div>
+                        </div>
+                        <div class="group-actions">
+                            <button class="group-remove-btn" onclick="event.stopPropagation(); removeFromHistory('${group.id}')">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor(diffMs / (1000 * 60));
+            
+            if (diffDays > 0) return `${diffDays}日前`;
+            if (diffHours > 0) return `${diffHours}時間前`;
+            if (diffMinutes > 0) return `${diffMinutes}分前`;
+            return 'たった今';
+        }
+
+        function joinGroup(groupId) {
+            // 確認ダイアログ
+            const group = groupHistory.find(g => g.id === groupId);
+            if (!group) return;
+            
+            if (!confirm(`「${group.name}」に参加しますか？`)) {
+                return;
+            }
+            
+            // グループデータを読み込み
+            loadGroupById(groupId);
+        }
+
+        function removeFromHistory(groupId) {
+            if (!confirm('このグループを履歴から削除しますか？')) {
+                return;
+            }
+            
+            groupHistory = groupHistory.filter(g => g.id !== groupId);
+            saveGroupHistory();
+            updateGroupList();
+        }
+
+        function loadGroupById(groupId) {
+            currentGroupId = groupId;
+            
+            // Firebaseからデータを読み込み
+            const groupRef = firebase.database().ref('groups/' + groupId);
+            groupRef.once('value').then(snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    // データを復元
+                    groupName = data.groupName || '';
+                    members = data.members || [];
+                    expenses = data.expenses || [];
+                    
+                    // UIを更新
+                    updateGroupUI();
+                    
+                    // Firebase監視を開始
+                    startFirebaseSync();
+                    
+                    // 履歴を更新
+                    addToGroupHistory({
+                        id: groupId,
+                        name: groupName,
+                        memberCount: members.length,
+                        expenseCount: expenses.length
+                    });
+                    
+                    console.log('グループに参加しました:', groupName);
+                } else {
+                    alert('グループが見つかりませんでした');
+                }
+            }).catch(error => {
+                console.error('グループの読み込みエラー:', error);
+                alert('グループの読み込みに失敗しました');
+            });
+        }
+
+        function updateGroupUI() {
+            // メイン画面に移行
+            document.getElementById('group-setup').classList.add('hidden');
+            document.getElementById('group-history').classList.add('hidden');
+            document.getElementById('main-section').classList.remove('hidden');
+            
+            // タイトル更新
+            document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
+            
+            // 新しいグループボタンを表示
+            document.getElementById('home-button-container').classList.remove('hidden');
+            
+            // UI要素を更新
+            updatePayerOptions();
+            updateParticipantOptions();
+            updateExpenseList();
+            calculateSettlement();
+        }
+
+        // ダッシュボードデータ更新
+        function updateDashboard() {
+            updateOverallSummary();
+            updateTagStatistics();
+            updateExpenseTrends();
+            updateTagAverages();
+            updateDetailedAnalysis();
+        }
+
+        // 全体サマリー更新
+        function updateOverallSummary() {
+            const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const totalExpenses = expenses.length;
+            const averageExpense = totalAmount / totalExpenses;
+            const uniqueTags = new Set();
+            expenses.forEach(expense => {
+                if (expense.tags) {
+                    expense.tags.forEach(tag => uniqueTags.add(tag.name));
+                }
+            });
+
+            document.getElementById('overall-summary').innerHTML = `
+                <div class="summary-stat">
+                    <span class="value">¥${totalAmount.toLocaleString()}</span>
+                    <div class="label">総支出額</div>
+                </div>
+                <div class="summary-stat">
+                    <span class="value">${totalExpenses}</span>
+                    <div class="label">支出件数</div>
+                </div>
+                <div class="summary-stat">
+                    <span class="value">¥${Math.round(averageExpense).toLocaleString()}</span>
+                    <div class="label">平均支出額</div>
+                </div>
+                <div class="summary-stat">
+                    <span class="value">${uniqueTags.size}</span>
+                    <div class="label">使用タグ数</div>
+                </div>
+            `;
+        }
+
+        // タグ別統計更新
+        function updateTagStatistics() {
+            const tagStats = {};
+            let totalAmount = 0;
+            
+            expenses.forEach(expense => {
+                totalAmount += expense.amount;
+                if (expense.tags && expense.tags.length > 0) {
+                    expense.tags.forEach(tag => {
+                        if (!tagStats[tag.name]) {
+                            tagStats[tag.name] = { 
+                                amount: 0, 
+                                count: 0, 
+                                color: tag.color || '#6c757d' 
+                            };
+                        }
+                        tagStats[tag.name].amount += expense.amount;
+                        tagStats[tag.name].count++;
+                    });
+                } else {
+                    // タグなし
+                    if (!tagStats['タグなし']) {
+                        tagStats['タグなし'] = { amount: 0, count: 0, color: '#95a5a6' };
+                    }
+                    tagStats['タグなし'].amount += expense.amount;
+                    tagStats['タグなし'].count++;
+                }
+            });
+
+            const sortedTags = Object.entries(tagStats)
+                .sort(([,a], [,b]) => b.amount - a.amount);
+
+            let html = '';
+            sortedTags.forEach(([tagName, stats]) => {
+                const percentage = totalAmount > 0 ? (stats.amount / totalAmount * 100) : 0;
+                html += `
+                    <div class="tag-stat-item">
+                        <div class="tag-stat-label">
+                            <span class="expense-tag" style="background-color: ${stats.color};">${tagName}</span>
+                            <span>${stats.count}件</span>
+                        </div>
+                        <div class="tag-stat-value">¥${stats.amount.toLocaleString()}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%; background-color: ${stats.color};"></div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('tag-statistics').innerHTML = html;
+        }
+
+
+        // 支出推移更新
+        function updateExpenseTrends() {
+            const dailyExpenses = {};
+            
+            expenses.forEach(expense => {
+                const date = new Date(expense.timestamp).toLocaleDateString('ja-JP');
+                if (!dailyExpenses[date]) {
+                    dailyExpenses[date] = 0;
+                }
+                dailyExpenses[date] += expense.amount;
+            });
+
+            const sortedDates = Object.keys(dailyExpenses).sort();
+            let html = '';
+            
+            if (sortedDates.length === 0) {
+                html = '<p style="color: #666; font-style: italic;">データがありません</p>';
+            } else {
+                const maxAmount = Math.max(...Object.values(dailyExpenses));
+                
+                sortedDates.forEach(date => {
+                    const amount = dailyExpenses[date];
+                    const percentage = maxAmount > 0 ? (amount / maxAmount * 100) : 0;
+                    
+                    html += `
+                        <div class="tag-stat-item">
+                            <div class="tag-stat-label">
+                                <span>${date}</span>
+                            </div>
+                            <div class="tag-stat-value">¥${amount.toLocaleString()}</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%; background-color: #3498db;"></div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('expense-trends').innerHTML = html;
+        }
+
+        // タグ別平均金額更新
+        function updateTagAverages() {
+            const tagStats = {};
+            
+            expenses.forEach(expense => {
+                if (expense.tags && expense.tags.length > 0) {
+                    expense.tags.forEach(tag => {
+                        if (!tagStats[tag.name]) {
+                            tagStats[tag.name] = { 
+                                total: 0, 
+                                count: 0, 
+                                color: tag.color || '#6c757d' 
+                            };
+                        }
+                        tagStats[tag.name].total += expense.amount;
+                        tagStats[tag.name].count++;
+                    });
+                }
+            });
+
+            const sortedByAverage = Object.entries(tagStats)
+                .map(([name, stats]) => [name, stats.total / stats.count, stats.color])
+                .sort(([,a], [,b]) => b - a);
+
+            let html = '';
+            if (sortedByAverage.length === 0) {
+                html = '<p style="color: #666; font-style: italic;">タグ付きの支出がありません</p>';
+            } else {
+                sortedByAverage.forEach(([tagName, average, color]) => {
+                    html += `
+                        <div class="tag-stat-item">
+                            <div class="tag-stat-label">
+                                <span class="expense-tag" style="background-color: ${color};">${tagName}</span>
+                            </div>
+                            <div class="tag-stat-value">¥${Math.round(average).toLocaleString()}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('tag-averages').innerHTML = html;
+        }
+
+        // 詳細分析更新
+        function updateDetailedAnalysis() {
+            const analysis = {
+                mostExpensiveTag: null,
+                mostFrequentTag: null,
+                highestSingleExpense: null,
+                expensiveDay: null
+            };
+
+            // タグ別統計を再計算
+            const tagStats = {};
+            expenses.forEach(expense => {
+                if (expense.tags && expense.tags.length > 0) {
+                    expense.tags.forEach(tag => {
+                        if (!tagStats[tag.name]) {
+                            tagStats[tag.name] = { total: 0, count: 0, color: tag.color };
+                        }
+                        tagStats[tag.name].total += expense.amount;
+                        tagStats[tag.name].count++;
+                    });
+                }
+            });
+
+            // 最も高額なタグ
+            if (Object.keys(tagStats).length > 0) {
+                const [mostExpensiveTagName, mostExpensiveStats] = Object.entries(tagStats)
+                    .reduce(([maxName, maxStats], [name, stats]) => 
+                        stats.total > maxStats.total ? [name, stats] : [maxName, maxStats]);
+                analysis.mostExpensiveTag = { name: mostExpensiveTagName, ...mostExpensiveStats };
+
+                // 最も頻繁なタグ
+                const [mostFrequentTagName, mostFrequentStats] = Object.entries(tagStats)
+                    .reduce(([maxName, maxStats], [name, stats]) => 
+                        stats.count > maxStats.count ? [name, stats] : [maxName, maxStats]);
+                analysis.mostFrequentTag = { name: mostFrequentTagName, ...mostFrequentStats };
+            }
+
+            // 最高額の単一支出
+            if (expenses.length > 0) {
+                analysis.highestSingleExpense = expenses.reduce((max, expense) => 
+                    expense.amount > max.amount ? expense : max);
+            }
+
+            // 最も支出の多い日
+            const dailyTotals = {};
+            expenses.forEach(expense => {
+                const date = new Date(expense.timestamp).toLocaleDateString('ja-JP');
+                dailyTotals[date] = (dailyTotals[date] || 0) + expense.amount;
+            });
+            
+            if (Object.keys(dailyTotals).length > 0) {
+                const [expensiveDate, expensiveAmount] = Object.entries(dailyTotals)
+                    .reduce(([maxDate, maxAmount], [date, amount]) => 
+                        amount > maxAmount ? [date, amount] : [maxDate, maxAmount]);
+                analysis.expensiveDay = { date: expensiveDate, amount: expensiveAmount };
+            }
+
+            let html = '<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">';
+            
+            if (analysis.mostExpensiveTag) {
+                html += `
+                    <div class="dashboard-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white;">
+                        <h4 style="margin: 0 0 10px 0;">💰 最高額タグ</h4>
+                        <div style="font-size: 18px; font-weight: bold;">${analysis.mostExpensiveTag.name}</div>
+                        <div style="font-size: 24px; margin-top: 5px;">¥${analysis.mostExpensiveTag.total.toLocaleString()}</div>
+                    </div>
+                `;
+            }
+
+            if (analysis.mostFrequentTag) {
+                html += `
+                    <div class="dashboard-card" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">
+                        <h4 style="margin: 0 0 10px 0;">📊 最頻出タグ</h4>
+                        <div style="font-size: 18px; font-weight: bold;">${analysis.mostFrequentTag.name}</div>
+                        <div style="font-size: 24px; margin-top: 5px;">${analysis.mostFrequentTag.count}件</div>
+                    </div>
+                `;
+            }
+
+            if (analysis.highestSingleExpense) {
+                html += `
+                    <div class="dashboard-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white;">
+                        <h4 style="margin: 0 0 10px 0;">🏆 最高額支出</h4>
+                        <div style="font-size: 16px;">${analysis.highestSingleExpense.description}</div>
+                        <div style="font-size: 24px; margin-top: 5px;">¥${analysis.highestSingleExpense.amount.toLocaleString()}</div>
+                    </div>
+                `;
+            }
+
+            if (analysis.expensiveDay) {
+                html += `
+                    <div class="dashboard-card" style="background: linear-gradient(135deg, #1abc9c, #16a085); color: white;">
+                        <h4 style="margin: 0 0 10px 0;">📅 最高額日</h4>
+                        <div style="font-size: 16px;">${analysis.expensiveDay.date}</div>
+                        <div style="font-size: 24px; margin-top: 5px;">¥${analysis.expensiveDay.amount.toLocaleString()}</div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            document.getElementById('detailed-analysis').innerHTML = html;
+        }
+
+        // タブ切り替え機能
+        function switchTab(tabName) {
+            // 全てのタブボタンから active クラスを削除
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 全てのタブコンテンツを非表示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 選択されたタブボタンに active クラスを追加
+            event.target.classList.add('active');
+            
+            // 選択されたタブコンテンツを表示
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // 支出入力タブに切り替わった場合は、タグシステムを再初期化
+            if (tabName === 'input') {
+                // 少し遅延してからタグシステムを初期化（DOM更新後）
+                setTimeout(() => {
+                    initializeTagSystem();
+                }, 100);
+            }
+        }
+
         // Enterキーでのメンバー追加
         document.getElementById('member-name').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1121,6 +2410,8 @@
         // ページ読み込み完了時にデータ復元を実行
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
+            initializeTagSystem(); // タグシステムを初期化
+            loadGroupHistory(); // グループ履歴を読み込み
         });
     </script>
 </body>
