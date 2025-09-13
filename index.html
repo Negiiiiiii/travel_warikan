@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -820,28 +821,56 @@
             members = data.members || [];
             expenses = data.expenses || [];
             
-            // UIを更新
+            // UIを更新（ユーザーが入力中の場合は避ける）
             if (document.getElementById('main-section').classList.contains('hidden')) {
-                // グループ設定画面の場合
-                document.getElementById('group-name').value = groupName;
-                updateMemberList();
-                updateStartButton();
+                // グループ設定画面の場合 - フォーカス中の入力は避ける
+                const groupNameInput = document.getElementById('group-name');
+                const memberNameInput = document.getElementById('member-name');
+                
+                if (document.activeElement !== groupNameInput && groupNameInput.value === '') {
+                    groupNameInput.value = groupName;
+                }
+                
+                if (document.activeElement !== memberNameInput) {
+                    updateMemberList();
+                    updateStartButton();
+                }
             } else {
                 // 計算画面の場合
                 document.querySelector('.header h1').textContent = `🧳 ${groupName}`;
                 
-                // メンバー数が変更された場合のみ選択肢を更新
-                if (members.length !== oldMembersCount) {
+                // 入力フィールドや選択要素にフォーカスされていない場合のみ選択肢を更新
+                const expenseInputs = [
+                    document.getElementById('payer'),
+                    document.getElementById('amount'),
+                    document.getElementById('description')
+                ];
+                
+                const hasActiveInput = expenseInputs.some(input => document.activeElement === input);
+                const hasActiveCheckbox = document.activeElement && document.activeElement.type === 'checkbox';
+                const isClickingTag = document.activeElement && document.activeElement.classList.contains('preset-tag');
+                const isInteracting = hasActiveInput || hasActiveCheckbox || isClickingTag;
+                
+                // メンバー数が変更され、かつユーザーが操作中でない場合のみ選択肢を更新
+                if (members.length !== oldMembersCount && !isInteracting) {
                     updatePayerOptionsPreservingSelection();
                     updateParticipantOptionsPreservingSelection();
                 }
                 
+                // 支出リストは常に更新（表示のみなのでユーザー入力に影響しない）
                 updateExpenseList();
                 calculateSettlement();
             }
             
-            // LocalStorageも更新
-            saveData();
+            // LocalStorageも更新（サイレントに）
+            const data_to_save = {
+                groupName: groupName,
+                members: members,
+                expenses: expenses,
+                groupId: currentGroupId,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('travelSplitData', JSON.stringify(data_to_save));
             
             // 新しい支出が追加された場合は通知
             if (expenses.length > oldExpensesCount) {
@@ -970,14 +999,27 @@
         };
 
         // タグ管理機能
+        let tagSystemInitialized = false;
         function initializeTagSystem() {
-            // プリセットタグクリック
-            document.querySelectorAll('.preset-tag').forEach(tag => {
-                tag.addEventListener('click', function() {
-                    const tagName = this.dataset.tag;
-                    toggleTag(tagName, tagColors[tagName] || '#6c757d');
-                });
+            // 既に初期化済みの場合はスキップ
+            if (tagSystemInitialized) {
+                return;
+            }
+            
+            // プリセットタグクリック（イベント委譲を使用）
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('preset-tag')) {
+                    const tagName = e.target.dataset.tag;
+                    const color = tagColors[tagName] || '#6c757d';
+                    
+                    // クリック処理を少し遅延させて、他の処理との競合を避ける
+                    setTimeout(() => {
+                        toggleTag(tagName, color);
+                    }, 10);
+                }
             });
+            
+            tagSystemInitialized = true;
         }
 
         // タグの選択/選択解除
@@ -1753,11 +1795,16 @@
 
         // ページ読み込み時のデータ復元
         function initializeApp() {
-            // 1. URLパラメータから共有データを読み込み（共有リンクの場合のみ）
+            // 1. まずURLパラメータから共有データを読み込み
             const loadedFromShare = loadFromShareUrl();
             
-            // 2. 共有リンクでアクセスした場合のみ、グループ画面に移行
-            if (loadedFromShare && groupName && members.length > 0) {
+            // 2. 共有データがない場合はLocalStorageから読み込み
+            if (!loadedFromShare) {
+                loadData();
+            }
+            
+            // 3. データがある場合はUIを復元
+            if (groupName && members.length > 0) {
                 // グループ設定をUIに反映
                 document.getElementById('group-name').value = groupName;
                 updateMemberList();
@@ -1790,21 +1837,35 @@
                 // 清算結果を計算・表示
                 calculateSettlement();
                 
-                // Firebase監視を開始
-                if (currentGroupId) {
+                // Firebase監視を開始（まだ開始されていない場合）
+                if (currentGroupId && !loadedFromShare) {
                     watchFirebaseData(currentGroupId);
                 }
                 
-                // 共有リンクから読み込んだ場合は通知
-                setTimeout(() => {
-                    showNotification(`📤 共有されたグループに参加しました！\nリアルタイム同期が有効です。`);
-                }, 1000);
+                if (loadedFromShare) {
+                    // 共有リンクから読み込んだ場合は通知
+                    setTimeout(() => {
+                        showNotification(`📤 共有されたグループに参加しました！\nリアルタイム同期が有効です。`);
+                    }, 1000);
+                }
                 
-                console.log('共有データを復元しました');
+                console.log(loadedFromShare ? '共有データを復元しました' : '保存されたデータを復元しました');
+            } else if (currentGroupId) {
+                // GroupIDがあるがデータがまだ来ていない場合（Firebase待ち）
+                setTimeout(() => {
+                    if (!groupName && currentGroupId) {
+                        showNotification('🔄 グループデータを読み込み中...');
+                    }
+                }, 2000);
             } else {
-                // 通常のアプリ起動時は常にトップ画面を表示
-                console.log('初期画面を表示します');
-            }
+                // 部分的なデータがある場合はグループ設定画面で表示
+                if (groupName) {
+                    document.getElementById('group-name').value = groupName;
+                }
+                if (members.length > 0) {
+                    updateMemberList();
+                    updateStartButton();
+                }
             }
         }
 
@@ -2034,7 +2095,7 @@
                     updateGroupUI();
                     
                     // Firebase監視を開始
-                    startFirebaseSync();
+                    watchFirebaseData(groupId);
                     
                     // 履歴を更新
                     addToGroupHistory({
@@ -2372,13 +2433,7 @@
             // 選択されたタブコンテンツを表示
             document.getElementById(`${tabName}-tab`).classList.add('active');
             
-            // 支出入力タブに切り替わった場合は、タグシステムを再初期化
-            if (tabName === 'input') {
-                // 少し遅延してからタグシステムを初期化（DOM更新後）
-                setTimeout(() => {
-                    initializeTagSystem();
-                }, 100);
-            }
+            // タブ切り替え時は再初期化不要（イベント委譲で対応済み）
         }
 
         // Enterキーでのメンバー追加
