@@ -786,7 +786,6 @@
         // Firebase接続状態の管理
         let isFirebaseConnected = false;
         let currentGroupId = null;
-        let currentGroupRef = null; // Firebaseの購読参照
         let tagChart = null; // Chart.jsインスタンス
         
         // 接続状態監視
@@ -826,13 +825,7 @@
         // Firebaseからデータを監視
         function watchFirebaseData(groupId) {
             currentGroupId = groupId;
-
-            if (currentGroupRef) {
-                currentGroupRef.off();
-            }
-
             const groupRef = database.ref('groups/' + groupId);
-            currentGroupRef = groupRef;
             
             groupRef.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -850,20 +843,6 @@
                     }
                 }
             });
-        }
-
-        async function deleteGroupFromFirebase() {
-            if (!currentGroupId) {
-                return;
-            }
-
-            try {
-                await database.ref('groups/' + currentGroupId).remove();
-                console.log('Firebase上のグループを削除しました:', currentGroupId);
-            } catch (error) {
-                console.error('Firebase上のグループ削除に失敗しました:', error);
-                throw error;
-            }
         }
 
         // Firebaseからのデータでローカル状態を更新
@@ -1327,26 +1306,27 @@
 
         // データクリア機能
         function clearData() {
-            if (!confirm('すべてのデータをクリアしますか？この操作は取り消せません。')) {
-                return;
-            }
-
-            const deletingGroupId = currentGroupId;
-
-            const finalizeClear = () => {
+            if (confirm('すべてのデータをクリアしますか？この操作は取り消せません。')) {
                 localStorage.removeItem('travelSplitData');
-                localStorage.removeItem('appState');
-
-                removeGroupFromHistoryById(deletingGroupId);
-                returnToHome(true);
+                members = [];
+                expenses = [];
+                groupName = '';
+                
+                // UIをリセット
+                document.getElementById('group-name').value = '';
+                updateMemberList();
+                updateStartButton();
+                document.getElementById('expense-list').innerHTML = '';
+                document.getElementById('summary').innerHTML = '';
+                document.getElementById('settlement-list').innerHTML = '';
+                
+                // グループ設定画面に戻る
+                document.getElementById('group-setup').classList.remove('hidden');
+                document.getElementById('main-section').classList.add('hidden');
+                document.querySelector('.header h1').textContent = '🧳 TravelSplit';
+                
                 alert('データをクリアしました');
-            };
-
-            deleteGroupFromFirebase()
-                .catch(() => {
-                    alert('Firebase上のグループ削除に失敗しました。オフラインの場合は再接続後にもう一度お試しください。');
-                })
-                .finally(finalizeClear);
+            }
         }
 
         // データ圧縮・エンコード機能（Firebase用に簡略化）
@@ -2361,37 +2341,39 @@
 
 
         // 初期画面に戻る
-        function returnToHome(skipConfirm = false) {
-            if (!skipConfirm && !confirm('新しいグループを作成しますか？
-現在のグループから離れて初期画面に戻ります。')) {
+        function returnToHome() {
+            // 確認ダイアログ
+            if (!confirm('新しいグループを作成しますか？\n現在のグループから離れて初期画面に戻ります。')) {
                 return;
             }
-
+            
+            // アプリの状態をリセット
             groupName = '';
             members = [];
             expenses = [];
             currentGroupId = null;
             selectedTags = [];
-
-            if (currentGroupRef) {
-                currentGroupRef.off();
-                currentGroupRef = null;
+            
+            // Firebaseからの監視を停止
+            if (window.currentGroupRef) {
+                window.currentGroupRef.off();
+                window.currentGroupRef = null;
             }
-
+            
+            // UI要素をリセット（存在チェック付き）
             const resetElement = (id, value = '') => {
                 const element = document.getElementById(id);
                 if (element) {
                     if (element.tagName === 'SELECT') {
                         element.innerHTML = value || '<option value="">選択してください</option>';
-                    }
-                    else if (element.tagName === 'INPUT') {
+                    } else if (element.tagName === 'INPUT') {
                         element.value = value;
                     } else {
                         element.innerHTML = value;
                     }
                 }
             };
-
+            
             resetElement('group-name');
             resetElement('member-name');
             resetElement('member-list');
@@ -2401,49 +2383,38 @@
             resetElement('participant-checkboxes');
             resetElement('expense-list');
             resetElement('settlement-list');
-
+            
+            // summary要素をリセット（存在する場合のみ）
             const summaryElement = document.getElementById('summary');
             if (summaryElement) {
                 summaryElement.innerHTML = '';
             }
-
+            
+            // 選択されたタグ表示をリセット
             const selectedTagsElement = document.getElementById('selected-tags');
             if (selectedTagsElement) {
                 selectedTagsElement.innerHTML = '<span style="color: #6c757d; font-style: italic;">タグが選択されていません</span>';
             }
-
+            
+            // セクションの表示を切り替え
             document.getElementById('group-setup').classList.remove('hidden');
             document.getElementById('group-history').classList.remove('hidden');
             document.getElementById('main-section').classList.add('hidden');
             document.getElementById('home-button-container').classList.add('hidden');
-
+            
+            // ヘッダーのタイトルをリセット
             document.querySelector('.header h1').textContent = '🧳 TravelSplit';
-
+            
+            // タグ選択もリセット
             clearTagSelection();
-
-            const statusEl = document.getElementById('connection-status');
-            if (statusEl) {
-                statusEl.innerHTML = '🔄 接続中...';
-            }
-
+            
+            // 接続状態をリセット
+            document.getElementById('connection-status').innerHTML = '🔄 接続中...';
+            
             console.log('初期画面に戻りました');
         }
 
         // グループ履歴管理機能
-        function removeGroupFromHistoryById(groupId) {
-            if (!groupId) {
-                return;
-            }
-
-            const initialLength = groupHistory.length;
-            groupHistory = groupHistory.filter(g => g.id !== groupId);
-
-            if (groupHistory.length != initialLength) {
-                saveGroupHistory();
-                updateGroupList();
-            }
-        }
-
         function addToGroupHistory(groupData) {
             const existingIndex = groupHistory.findIndex(g => g.id === groupData.id);
             
