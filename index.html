@@ -1733,10 +1733,16 @@
 
         // 支出削除
         function removeExpense(index) {
-            expenses.splice(index, 1);
-            updateExpenseList();
-            calculateSettlement();
-            saveData();
+            const expense = expenses[index];
+            const confirmMessage = `「${expense.description}」を削除しますか？\n\n金額: ¥${expense.amount.toLocaleString()}\n支払者: ${expense.payer}\n対象者: ${expense.participants.join(', ')}`;
+
+            if (confirm(confirmMessage)) {
+                expenses.splice(index, 1);
+                updateExpenseList();
+                calculateSettlement();
+                saveData();
+                alert('支出を削除しました');
+            }
         }
 
         // 編集用変数
