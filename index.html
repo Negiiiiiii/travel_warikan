@@ -1778,6 +1778,8 @@
                         <p>支払者: <select id="edit-payer"></select></p>
                         <p>金額: <input type="number" id="edit-amount" style="width: 100px;"></p>
                         <p>内容: <input type="text" id="edit-description" style="width: 200px;"></p>
+                        <p>支出日時: <input type="datetime-local" id="edit-expense-date" style="width: 200px;"></p>
+                        <p>割り勘対象者:</p>
                         <div id="edit-participant-checkboxes"></div>
                         <p>
                             <button onclick="closeEditModal()">キャンセル</button>
@@ -1816,18 +1818,28 @@
             document.getElementById('edit-amount').value = expense.amount;
             document.getElementById('edit-description').value = expense.description;
 
+            // 日時フィールド設定（ISO形式からdatetime-local形式に変換）
+            const expenseDate = new Date(expense.timestamp);
+            const localDateTime = new Date(expenseDate.getTime() - expenseDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('edit-expense-date').value = localDateTime;
+
             // 対象者チェックボックス設定
             const participantContainer = document.getElementById('edit-participant-checkboxes');
             participantContainer.innerHTML = '';
+            console.log('設定中の支出:', expense);
+            console.log('現在の参加者:', expense.participants);
+
             members.forEach(member => {
                 const label = document.createElement('label');
-                label.style.cssText = 'display: block; margin-bottom: 5px; cursor: pointer;';
+                label.style.cssText = 'display: block; margin-bottom: 10px; cursor: pointer; font-size: 14px;';
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.value = member;
                 checkbox.checked = expense.participants.includes(member);
                 checkbox.style.marginRight = '8px';
+
+                console.log(`メンバー ${member}: チェック状態 = ${checkbox.checked}`);
 
                 label.appendChild(checkbox);
                 label.appendChild(document.createTextNode(member));
@@ -1850,6 +1862,7 @@
             const payer = document.getElementById('edit-payer').value;
             const amount = parseInt(document.getElementById('edit-amount').value);
             const description = document.getElementById('edit-description').value || '支出';
+            const expenseDate = document.getElementById('edit-expense-date').value;
 
             // バリデーション
             if (!payer) {
@@ -1864,10 +1877,19 @@
             // 参加者の取得
             const participantCheckboxes = document.querySelectorAll('#edit-participant-checkboxes input[type="checkbox"]:checked');
             const participants = Array.from(participantCheckboxes).map(cb => cb.value);
+            console.log('選択された参加者:', participants);
 
             if (participants.length === 0) {
                 alert('割り勘対象者を最低1人選択してください');
                 return;
+            }
+
+            // 日時処理：入力があればその日時を使用、なければ元の日時を保持
+            let timestamp;
+            if (expenseDate) {
+                timestamp = new Date(expenseDate).toISOString();
+            } else {
+                timestamp = expenses[editingExpenseIndex].timestamp;
             }
 
             // 支出データの更新
@@ -1877,7 +1899,8 @@
                 amount,
                 description,
                 participants,
-                tags: [...editSelectedTags]
+                tags: [...editSelectedTags],
+                timestamp: timestamp
             };
 
             // 表示を更新
