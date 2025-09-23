@@ -388,7 +388,7 @@
         /* ダッシュボード用スタイル */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -500,6 +500,34 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
+                margin: 0 -10px; /* 左右の余白を調整 */
+            }
+
+            .dashboard-card {
+                padding: 15px;
+                margin: 0 10px; /* カード間の余白を調整 */
+                min-width: 0; /* グリッドアイテムの最小幅をリセット */
+                overflow: hidden; /* コンテンツがはみ出さないようにする */
+            }
+
+            /* チャートのレスポンシブ対応 */
+            .dashboard-card canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+
+            /* より小さい画面用の追加対応 */
+            @media (max-width: 320px) {
+                .dashboard-grid {
+                    grid-template-columns: 1fr;
+                    gap: 10px;
+                    margin: 0 -5px;
+                }
+
+                .dashboard-card {
+                    padding: 10px;
+                    margin: 0 5px;
+                }
             }
             
             .summary-stats {
@@ -523,7 +551,7 @@
                 </div>
                 <div id="home-button-container" class="hidden">
                     <button onclick="returnToHome()" style="background: #95a5a6; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                        🏠 新しいグループ
+                        🏠 グループ変更
                     </button>
                 </div>
             </div>
@@ -621,7 +649,13 @@
                         <label>割り勘対象者（複数選択可）</label>
                         <div id="participants" class="checkbox-group"></div>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label for="expense-date">支払った日</label>
+                        <input type="date" id="expense-date" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <small style="color: #666; font-size: 12px;">空白の場合は現在の日時で登録されます</small>
+                    </div>
+
                     <button type="button" onclick="addExpense()" class="add-expense-btn">
                         💰 支出を追加
                     </button>
@@ -645,14 +679,62 @@
             <!-- 清算結果タブ -->
             <div id="settlement-tab" class="tab-content">
                 <div class="section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span></span>
-                        <button onclick="showDashboard()" style="background: #9b59b6; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            📊 ダッシュボード表示
-                        </button>
-                    </div>
                     <div id="summary" class="summary"></div>
                     <ul id="settlement-list" class="settlement-list"></ul>
+                </div>
+
+                <!-- ダッシュボード表示ボタン -->
+                <div style="text-align: center; margin: 20px 0;">
+                    <button id="dashboard-toggle" onclick="toggleDashboard()" style="background: #9b59b6; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s;">
+                        📊 支出ダッシュボードを表示
+                    </button>
+                </div>
+
+                <!-- 折りたたみ式ダッシュボード -->
+                <div id="collapsible-dashboard" style="display: none; margin-top: 20px;">
+                    <div class="section">
+                        <h2 style="text-align: center; margin-bottom: 20px;">📊 支出ダッシュボード</h2>
+
+                        <!-- 全体サマリー -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                            <div id="overall-summary"></div>
+                        </div>
+
+                        <!-- ダッシュボードグリッド -->
+                        <div class="dashboard-grid">
+                            <!-- タグ別支出統計（ドーナツ） -->
+                            <div class="dashboard-card">
+                                <h3>🏷️ タグ別支出統計</h3>
+                                <div id="tag-statistics">
+                                    <canvas id="tag-chart" width="300" height="300"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- タグ別詳細統計（棒グラフ） -->
+                            <div class="dashboard-card">
+                                <h3>📊 タグ別詳細統計</h3>
+                                <div id="tag-bar-statistics"></div>
+                            </div>
+
+                            <!-- 支出推移 -->
+                            <div class="dashboard-card">
+                                <h3>📈 支出推移</h3>
+                                <div id="expense-trends"></div>
+                            </div>
+
+                            <!-- タグ別平均金額 -->
+                            <div class="dashboard-card">
+                                <h3>💰 タグ別平均金額</h3>
+                                <div id="tag-averages"></div>
+                            </div>
+
+                            <!-- 詳細分析 -->
+                            <div class="dashboard-card">
+                                <h3>🔍 詳細分析</h3>
+                                <div id="detailed-analysis"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -679,61 +761,11 @@
         </div>
     </div>
 
-    <!-- ダッシュボード画面 -->
-    <div id="dashboard-section" class="hidden">
-        <div class="header">
-            <h1>📊 支出ダッシュボード</h1>
-            <div class="header-actions">
-                <div class="connection-status" id="connection-status-dashboard">
-                    <span class="status-indicator" id="status-indicator-dashboard"></span>
-                    <span id="connection-text-dashboard">接続中...</span>
-                </div>
-                <button onclick="showMainScreen()" style="background: #3498db; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
-                    ← 計算画面に戻る
-                </button>
-            </div>
-        </div>
-
-        <div class="container">
-            <!-- 全体サマリー -->
-            <div class="section">
-                <h2>💰 全体サマリー</h2>
-                <div id="overall-summary" class="summary-stats"></div>
-            </div>
-
-            <!-- ダッシュボードグリッド -->
-            <div class="dashboard-grid">
-                <!-- タグ別支出統計 -->
-                <div class="dashboard-card">
-                    <h3>🏷️ タグ別支出統計</h3>
-                    <div id="tag-statistics"></div>
-                </div>
-
-
-                <!-- 月別推移 -->
-                <div class="dashboard-card">
-                    <h3>📈 支出推移</h3>
-                    <div id="expense-trends"></div>
-                </div>
-
-                <!-- タグ別平均金額 -->
-                <div class="dashboard-card">
-                    <h3>📊 タグ別平均金額</h3>
-                    <div id="tag-averages"></div>
-                </div>
-            </div>
-
-            <!-- 詳細分析 -->
-            <div class="section">
-                <h2>🔍 詳細分析</h2>
-                <div id="detailed-analysis"></div>
-            </div>
-        </div>
-    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // Firebase設定情報（あなたの設定に置き換えてください）
@@ -754,6 +786,7 @@
         // Firebase接続状態の管理
         let isFirebaseConnected = false;
         let currentGroupId = null;
+        let tagChart = null; // Chart.jsインスタンス
         
         // 接続状態監視
         const connectedRef = database.ref('.info/connected');
@@ -1124,7 +1157,6 @@
         function getCurrentPage() {
             if (!document.getElementById('group-setup').classList.contains('hidden')) return 'setup';
             if (!document.getElementById('main-section').classList.contains('hidden')) return 'main';
-            if (!document.getElementById('dashboard-section').classList.contains('hidden')) return 'dashboard';
             return 'setup';
         }
 
@@ -1224,7 +1256,6 @@
                 document.getElementById('group-setup').classList.add('hidden');
                 document.getElementById('group-history').classList.add('hidden');
                 document.getElementById('main-section').classList.remove('hidden');
-                document.getElementById('dashboard-section').classList.add('hidden');
                 
                 // タブを復元
                 if (appState.currentTab) {
@@ -1233,9 +1264,7 @@
             } else if (appState.currentPage === 'dashboard') {
                 document.getElementById('group-setup').classList.add('hidden');
                 document.getElementById('group-history').classList.add('hidden');
-                document.getElementById('main-section').classList.add('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                updateDashboard();
+                document.getElementById('main-section').classList.remove('hidden');
             }
 
             // 新しいグループボタンを表示
@@ -1252,7 +1281,6 @@
             document.getElementById('group-setup').classList.remove('hidden');
             document.getElementById('group-history').classList.remove('hidden');
             document.getElementById('main-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('home-button-container').classList.add('hidden');
             document.querySelector('.header h1').textContent = '🧳 旅行費用計算アプリ';
         }
@@ -1391,6 +1419,7 @@
             
             // モーダルダイアログを作成
             const modal = document.createElement('div');
+            modal.id = 'share-modal';
             modal.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -1420,7 +1449,7 @@
                                 style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin: 5px;">
                             📋 リンクをコピー
                         </button>
-                        <button onclick="document.body.removeChild(this.closest('[style*=\"position: fixed\"]'));" 
+                        <button onclick="document.getElementById('share-modal').remove();"
                                 style="background: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin: 5px;">
                             閉じる
                         </button>
@@ -1566,26 +1595,40 @@
             const payer = document.getElementById('payer').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const description = document.getElementById('description').value.trim();
-            
+            const expenseDate = document.getElementById('expense-date').value;
+
             if (!payer) {
                 alert('支払った人を選択してください');
                 return;
             }
-            
+
             if (isNaN(amount) || amount <= 0) {
                 alert('正しい金額を入力してください');
                 return;
             }
-            
+
             // 参加者を取得
             const participantCheckboxes = document.querySelectorAll('#participants input[type="checkbox"]:checked');
             const participants = Array.from(participantCheckboxes).map(cb => cb.value);
-            
+
             if (participants.length === 0) {
                 alert('割り勘対象者を最低1人選択してください');
                 return;
             }
-            
+
+            // 日付処理：入力があればその日付を使用、なければ現在日時
+            let timestamp;
+            if (expenseDate) {
+                // 入力された日付を使用（時刻は現在時刻）
+                const selectedDate = new Date(expenseDate);
+                const now = new Date();
+                selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+                timestamp = selectedDate.toISOString();
+            } else {
+                // 現在日時を使用
+                timestamp = new Date().toISOString();
+            }
+
             // 支出を追加
             const expense = {
                 id: Date.now(),
@@ -1594,7 +1637,7 @@
                 description: description || '支出',
                 participants,
                 tags: [...selectedTags], // タグ情報を追加
-                timestamp: new Date()
+                timestamp: timestamp
             };
             
             expenses.push(expense);
@@ -1602,6 +1645,7 @@
             // フォームをリセット
             document.getElementById('amount').value = '';
             document.getElementById('description').value = '';
+            document.getElementById('expense-date').value = ''; // 日付フィールドもクリア
             clearTagSelection(); // タグ選択もクリア
             
             // 表示を更新
@@ -1643,16 +1687,42 @@
                         '</div>';
                 }
                 
+                // 日付と時刻を表示用にフォーマット
+                const expenseDate = new Date(expense.timestamp);
+                const dateStr = expenseDate.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                const timeStr = expenseDate.toLocaleTimeString('ja-JP', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
                 li.innerHTML = `
                     <div class="expense-details">
                         <strong>${expense.description}</strong><br>
                         支払者: ${expense.payer} | 金額: ¥${expense.amount.toLocaleString()}<br>
-                        対象者: ${expense.participants.join(', ')}
+                        対象者: ${expense.participants.join(', ')}<br>
+                        <small style="color: #666;">📅 ${dateStr} ${timeStr}</small>
                         ${tagsHtml}
                     </div>
-                    <button class="danger" onclick="removeExpense(${actualIndex})">削除</button>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="edit-btn-${actualIndex}" style="background: #f39c12; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            ✏️ 編集
+                        </button>
+                        <button class="danger" onclick="removeExpense(${actualIndex})" style="padding: 6px 12px; font-size: 12px;">
+                            🗑️ 削除
+                        </button>
+                    </div>
                 `;
                 expenseList.appendChild(li);
+
+                // 編集ボタンにイベントリスナーを設定
+                const editBtn = document.getElementById(`edit-btn-${actualIndex}`);
+                editBtn.addEventListener('click', function() {
+                    editExpense(actualIndex);
+                });
             });
             
             // タグフィルターセクションの表示制御とタグオプション更新
@@ -1670,6 +1740,248 @@
             updateExpenseList();
             calculateSettlement();
             saveData();
+        }
+
+        // 編集用変数
+        let editingExpenseIndex = -1;
+        let editSelectedTags = [];
+
+        // テスト関数
+        function testEdit(index) {
+            alert('編集ボタンが押されました！インデックス: ' + index);
+            console.log('テスト関数が呼ばれました', index);
+        }
+
+        // 支出編集
+        function editExpense(index) {
+            console.log('編集ボタンがクリックされました。インデックス:', index);
+            editingExpenseIndex = index;
+
+            // モーダルを表示
+            showEditModal();
+        }
+
+        // 編集モーダルを表示（シンプル版）
+        function showEditModal() {
+            console.log('モーダル表示開始');
+
+            // 既存のモーダルがあれば削除
+            const existingModal = document.getElementById('edit-expense-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // モーダル要素を作成
+            const modal = document.createElement('div');
+            modal.id = 'edit-expense-modal';
+            modal.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; padding: 30px; border-radius: 10px; width: 400px; max-width: 90vw;">
+                        <h3>支出を編集</h3>
+                        <p>支払者: <select id="edit-payer"></select></p>
+                        <p>金額: <input type="number" id="edit-amount" style="width: 100px;"></p>
+                        <p>内容: <input type="text" id="edit-description" style="width: 200px;"></p>
+                        <div id="edit-participant-checkboxes"></div>
+                        <p>
+                            <button onclick="closeEditModal()">キャンセル</button>
+                            <button onclick="saveEditedExpense()">保存</button>
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            // bodyに追加して表示
+            document.body.appendChild(modal);
+            console.log('モーダル要素を追加しました');
+
+            // フィールドに現在の値を設定
+            setTimeout(() => {
+                populateEditForm();
+            }, 100);
+        }
+
+        // 編集フォームに値を設定
+        function populateEditForm() {
+            const expense = expenses[editingExpenseIndex];
+
+            // 支払者選択肢を追加
+            const payerSelect = document.getElementById('edit-payer');
+            payerSelect.innerHTML = '';
+            members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member;
+                option.textContent = member;
+                option.selected = member === expense.payer;
+                payerSelect.appendChild(option);
+            });
+
+            // その他のフィールド設定
+            document.getElementById('edit-amount').value = expense.amount;
+            document.getElementById('edit-description').value = expense.description;
+
+            // 対象者チェックボックス設定
+            const participantContainer = document.getElementById('edit-participant-checkboxes');
+            participantContainer.innerHTML = '';
+            members.forEach(member => {
+                const label = document.createElement('label');
+                label.style.cssText = 'display: block; margin-bottom: 5px; cursor: pointer;';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = member;
+                checkbox.checked = expense.participants.includes(member);
+                checkbox.style.marginRight = '8px';
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(member));
+                participantContainer.appendChild(label);
+            });
+        }
+
+        // 編集モーダルを閉じる
+        function closeEditModal() {
+            const modal = document.getElementById('edit-expense-modal');
+            if (modal) {
+                modal.remove();
+            }
+            editingExpenseIndex = -1;
+            editSelectedTags = [];
+        }
+
+        // 編集済み支出を保存
+        function saveEditedExpense() {
+            const payer = document.getElementById('edit-payer').value;
+            const amount = parseInt(document.getElementById('edit-amount').value);
+            const description = document.getElementById('edit-description').value || '支出';
+
+            // バリデーション
+            if (!payer) {
+                alert('支払者を選択してください');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                alert('正しい金額を入力してください');
+                return;
+            }
+
+            // 参加者の取得
+            const participantCheckboxes = document.querySelectorAll('#edit-participant-checkboxes input[type="checkbox"]:checked');
+            const participants = Array.from(participantCheckboxes).map(cb => cb.value);
+
+            if (participants.length === 0) {
+                alert('割り勘対象者を最低1人選択してください');
+                return;
+            }
+
+            // 支出データの更新
+            expenses[editingExpenseIndex] = {
+                ...expenses[editingExpenseIndex],
+                payer,
+                amount,
+                description,
+                participants,
+                tags: [...editSelectedTags]
+            };
+
+            // 表示を更新
+            updateExpenseList();
+            calculateSettlement();
+            saveData();
+
+            // モーダルを閉じる
+            closeEditModal();
+
+            alert('支出を更新しました');
+        }
+
+        // 編集用選択タグ表示更新
+        function updateEditSelectedTagsDisplay() {
+            const container = document.getElementById('edit-selected-tags');
+
+            if (editSelectedTags.length === 0) {
+                container.innerHTML = '選択されたタグはここに表示されます';
+                container.style.color = '#999';
+                return;
+            }
+
+            container.style.color = '#333';
+            container.innerHTML = editSelectedTags.map(tag =>
+                `<span class="expense-tag" style="background-color: ${tag.color || '#6c757d'}; margin-right: 5px; margin-bottom: 5px;">${tag.name}</span>`
+            ).join('');
+        }
+
+        // 編集用プリセットタグ更新
+        function updateEditPresetTags() {
+            const container = document.getElementById('edit-preset-tags');
+            container.innerHTML = '';
+
+            presetTags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'preset-tag';
+                tagElement.style.cssText = `
+                    background-color: ${tag.color};
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 15px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    margin-right: 5px;
+                    margin-bottom: 5px;
+                    display: inline-block;
+                    transition: opacity 0.2s;
+                `;
+
+                // 既に選択されているかチェック
+                const isSelected = editSelectedTags.some(selected => selected.name === tag.name);
+                if (isSelected) {
+                    tagElement.style.opacity = '0.5';
+                    tagElement.style.cursor = 'default';
+                } else {
+                    tagElement.onclick = () => selectEditTag(tag);
+                }
+
+                tagElement.textContent = tag.name;
+                container.appendChild(tagElement);
+            });
+        }
+
+        // 編集用タグ選択
+        function selectEditTag(tag) {
+            // 既に選択されていないかチェック
+            if (!editSelectedTags.some(selected => selected.name === tag.name)) {
+                editSelectedTags.push(tag);
+                updateEditSelectedTagsDisplay();
+                updateEditPresetTags();
+            }
+        }
+
+        // 編集用カスタムタグ追加
+        function addEditCustomTag() {
+            const nameInput = document.getElementById('edit-custom-tag-input');
+            const colorInput = document.getElementById('edit-custom-tag-color');
+
+            const name = nameInput.value.trim();
+            const color = colorInput.value;
+
+            if (!name) {
+                alert('タグ名を入力してください');
+                return;
+            }
+
+            // 既に存在するかチェック
+            if (editSelectedTags.some(tag => tag.name === name)) {
+                alert('同じ名前のタグが既に選択されています');
+                return;
+            }
+
+            const newTag = { name, color };
+            editSelectedTags.push(newTag);
+
+            // 入力フィールドをクリア
+            nameInput.value = '';
+            colorInput.value = '#6c757d';
+
+            updateEditSelectedTagsDisplay();
         }
 
         // タグフィルターセクションの更新
@@ -1996,33 +2308,37 @@
         }
 
         // ダッシュボード画面表示
-        function showDashboard() {
+        // ダッシュボード折りたたみ切り替え
+        function toggleDashboard() {
             if (expenses.length === 0) {
                 alert('支出データがありません。まず支出を入力してください。');
                 return;
             }
-            
-            document.getElementById('main-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            
-            // ダッシュボードデータを更新
-            updateDashboard();
-            
-            // 接続状態を同期
-            updateConnectionStatus();
-            
-            // 状態を保存
-            saveAppState();
+
+            const dashboard = document.getElementById('collapsible-dashboard');
+            const button = document.getElementById('dashboard-toggle');
+
+            if (dashboard.style.display === 'none') {
+                // ダッシュボードを表示
+                dashboard.style.display = 'block';
+                button.textContent = '📊 支出ダッシュボードを閉じる';
+                button.style.background = '#e74c3c';
+
+                // ダッシュボードデータを更新
+                updateDashboard();
+
+                // スムーズにスクロール
+                setTimeout(() => {
+                    dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            } else {
+                // ダッシュボードを非表示
+                dashboard.style.display = 'none';
+                button.textContent = '📊 支出ダッシュボードを表示';
+                button.style.background = '#9b59b6';
+            }
         }
 
-        // メイン画面表示
-        function showMainScreen() {
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('main-section').classList.remove('hidden');
-            
-            // 状態を保存
-            saveAppState();
-        }
 
         // 初期画面に戻る
         function returnToHome() {
@@ -2084,7 +2400,6 @@
             document.getElementById('group-setup').classList.remove('hidden');
             document.getElementById('group-history').classList.remove('hidden');
             document.getElementById('main-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('home-button-container').classList.add('hidden');
             
             // ヘッダーのタイトルをリセット
@@ -2270,6 +2585,7 @@
         function updateDashboard() {
             updateOverallSummary();
             updateTagStatistics();
+            updateTagBarStatistics();
             updateExpenseTrends();
             updateTagAverages();
             updateDetailedAnalysis();
@@ -2307,20 +2623,216 @@
             `;
         }
 
-        // タグ別統計更新
+        // タグ別統計更新（ドーナツチャート）
         function updateTagStatistics() {
             const tagStats = {};
             let totalAmount = 0;
-            
+
             expenses.forEach(expense => {
                 totalAmount += expense.amount;
                 if (expense.tags && expense.tags.length > 0) {
                     expense.tags.forEach(tag => {
                         if (!tagStats[tag.name]) {
-                            tagStats[tag.name] = { 
-                                amount: 0, 
-                                count: 0, 
-                                color: tag.color || '#6c757d' 
+                            tagStats[tag.name] = {
+                                amount: 0,
+                                count: 0,
+                                color: tag.color || '#6c757d'
+                            };
+                        }
+                        tagStats[tag.name].amount += expense.amount;
+                        tagStats[tag.name].count++;
+                    });
+                } else {
+                    // タグなし
+                    if (!tagStats['タグなし']) {
+                        tagStats['タグなし'] = { amount: 0, count: 0, color: '#95a5a6' };
+                    }
+                    tagStats['タグなし'].amount += expense.amount;
+                    tagStats['タグなし'].count++;
+                }
+            });
+
+            const sortedTags = Object.entries(tagStats)
+                .sort(([,a], [,b]) => b.amount - a.amount);
+
+            // データが空の場合
+            if (sortedTags.length === 0) {
+                // 既存のチャートを破棄
+                if (tagChart) {
+                    tagChart.destroy();
+                    tagChart = null;
+                }
+
+                const container = document.getElementById('tag-statistics');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>📊 まだ支出データがありません</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // チャートデータの準備
+            const labels = sortedTags.map(([tagName, stats]) =>
+                `${tagName} (${stats.count}件)`
+            );
+            const data = sortedTags.map(([, stats]) => stats.amount);
+            const backgroundColor = sortedTags.map(([, stats]) => stats.color);
+
+            // 既存のチャートを破棄
+            if (tagChart) {
+                tagChart.destroy();
+            }
+
+            // キャンバス要素を取得または作成
+            const container = document.getElementById('tag-statistics');
+            container.innerHTML = '<div style="position: relative; width: 100%; height: 300px;"><canvas id="tag-chart"></canvas></div>';
+            const ctx = document.getElementById('tag-chart').getContext('2d');
+
+            // グラフ内ラベル表示プラグイン
+            const centerLabelsPlugin = {
+                id: 'centerLabels',
+                afterDatasetDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const chartArea = chart.chartArea;
+                    const meta = chart.getDatasetMeta(0);
+
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    // ドーナツ中心に合計金額を表示
+                    const centerX = chartArea.left + chartArea.width / 2;
+                    const centerY = chartArea.top + chartArea.height / 2;
+
+                    ctx.fillStyle = '#333333';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('合計', centerX, centerY - 12);
+
+                    ctx.font = 'bold 20px Arial';
+                    ctx.fillText(`¥${totalAmount.toLocaleString()}`, centerX, centerY + 8);
+
+                    // 各セクションのラベル表示
+                    ctx.fillStyle = '#ffffff';
+
+                    meta.data.forEach((arc, index) => {
+                        if (arc.circumference > 0.15) { // 小さすぎるセクションは表示しない
+                            const angle = (arc.startAngle + arc.endAngle) / 2;
+                            const radius = (arc.innerRadius + arc.outerRadius) / 2;
+                            const x = chartArea.left + chartArea.width / 2 + Math.cos(angle) * radius;
+                            const y = chartArea.top + chartArea.height / 2 + Math.sin(angle) * radius;
+
+                            const tagName = sortedTags[index][0];
+                            const amount = data[index];
+                            const percentage = ((amount / totalAmount) * 100).toFixed(0);
+
+                            // 金額をフルで表示
+                            const formatAmount = (amount) => {
+                                return `¥${amount.toLocaleString()}`;
+                            };
+
+                            // セクションサイズに応じてフォントサイズを調整（全体的に大きく）
+                            const sectionSize = arc.circumference;
+                            let fontSize;
+                            if (sectionSize > 2) {
+                                fontSize = 14;
+                            } else if (sectionSize > 1) {
+                                fontSize = 12;
+                            } else {
+                                fontSize = 11;
+                            }
+
+                            // 行間を計算（フォントサイズに応じて調整）
+                            const lineHeight = fontSize + 4;
+
+                            // タグ名（太字）
+                            ctx.font = `bold ${fontSize}px Arial`;
+                            ctx.fillText(tagName, x, y - lineHeight);
+
+                            // 金額と割合（通常フォント、タグ名より少し小さめ）
+                            ctx.font = `${Math.max(fontSize - 1, 11)}px Arial`;
+                            ctx.fillText(formatAmount(amount), x, y);
+                            ctx.fillText(`${percentage}%`, x, y + lineHeight);
+                        }
+                    });
+                    ctx.restore();
+                }
+            };
+
+
+            // ドーナツチャート作成
+            tagChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColor,
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                        hoverBorderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: {
+                            display: false // 凡例を非表示
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#fff',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const tagName = context.label.split(' (')[0];
+                                    const amount = context.parsed;
+                                    const percentage = ((amount / totalAmount) * 100).toFixed(1);
+                                    return `${tagName}: ¥${amount.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '30%', // ドーナツの穴を小さく
+                    layout: {
+                        padding: 20
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 1000
+                    },
+                    onResize: function(chart, size) {
+                        // リサイズ時のサイズ制御
+                        chart.canvas.style.maxWidth = '100%';
+                        chart.canvas.style.maxHeight = '300px';
+                    }
+                },
+                plugins: [centerLabelsPlugin]
+            });
+
+            // チャートのサイズを固定
+            tagChart.canvas.style.maxWidth = '100%';
+            tagChart.canvas.style.maxHeight = '300px';
+        }
+
+        // タグ別詳細統計更新（棒グラフ形式）
+        function updateTagBarStatistics() {
+            const tagStats = {};
+            let totalAmount = 0;
+
+            expenses.forEach(expense => {
+                totalAmount += expense.amount;
+                if (expense.tags && expense.tags.length > 0) {
+                    expense.tags.forEach(tag => {
+                        if (!tagStats[tag.name]) {
+                            tagStats[tag.name] = {
+                                amount: 0,
+                                count: 0,
+                                color: tag.color || '#6c757d'
                             };
                         }
                         tagStats[tag.name].amount += expense.amount;
@@ -2340,25 +2852,32 @@
                 .sort(([,a], [,b]) => b.amount - a.amount);
 
             let html = '';
-            sortedTags.forEach(([tagName, stats]) => {
-                const percentage = totalAmount > 0 ? (stats.amount / totalAmount * 100) : 0;
-                html += `
-                    <div class="tag-stat-item">
-                        <div class="tag-stat-label">
-                            <span class="expense-tag" style="background-color: ${stats.color};">${tagName}</span>
-                            <span>${stats.count}件</span>
-                        </div>
-                        <div class="tag-stat-value">¥${stats.amount.toLocaleString()}</div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percentage}%; background-color: ${stats.color};"></div>
+            if (sortedTags.length === 0) {
+                html = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>📊 まだ支出データがありません</p>
                     </div>
                 `;
-            });
+            } else {
+                sortedTags.forEach(([tagName, stats]) => {
+                    const percentage = totalAmount > 0 ? (stats.amount / totalAmount * 100) : 0;
+                    html += `
+                        <div class="tag-stat-item">
+                            <div class="tag-stat-label">
+                                <span class="expense-tag" style="background-color: ${stats.color};">${tagName}</span>
+                                <span>${stats.count}件</span>
+                            </div>
+                            <div class="tag-stat-value">¥${stats.amount.toLocaleString()}</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%; background-color: ${stats.color};"></div>
+                        </div>
+                    `;
+                });
+            }
 
-            document.getElementById('tag-statistics').innerHTML = html;
+            document.getElementById('tag-bar-statistics').innerHTML = html;
         }
-
 
         // 支出推移更新
         function updateExpenseTrends() {
@@ -2501,7 +3020,7 @@
                 analysis.expensiveDay = { date: expensiveDate, amount: expensiveAmount };
             }
 
-            let html = '<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">';
+            let html = '<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
             
             if (analysis.mostExpensiveTag) {
                 html += `
